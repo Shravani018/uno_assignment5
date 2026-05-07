@@ -2,7 +2,9 @@
 import random
 from typing import List, Optional
 from core.cards import Card, Color, CardType
+
 COLORS = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW]
+
 
 def build_deck() -> List[Card]:
     """Building a standard 108-card UNO deck.
@@ -55,9 +57,17 @@ class Deck:
         return self.discard_pile[-1]
 
     def setup_first_card(self) -> Card:
-        """Drawing starting card, skipping wilds for initial discard."""
+        """Drawing starting card, accepting only a colored number card.
+
+        Per UNO rules the first card must be a plain numbered card.
+        Wild, Wild Draw 4, Skip, Reverse, and Draw Two are all rejected
+        and returned to the bottom of the draw pile until a valid card
+        is found.
+
+        Returning the first valid starting Card.
+        """
         card = self.draw()
-        while card.is_wild():
+        while card.card_type != CardType.NUMBER or card.is_wild():
             self.draw_pile.insert(0, card)
             card = self.draw()
         self.discard(card)
