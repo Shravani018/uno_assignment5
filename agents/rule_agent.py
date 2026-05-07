@@ -47,8 +47,6 @@ from typing import List, Optional, Tuple
 from core.cards import Card, Color, CardType
 from core.game import GameState
 from agents.random_agent import BaseAgent
-
-
 WILD_TYPES = (CardType.WILD, CardType.WILD_DRAW_FOUR)
 THREAT_THRESHOLD = 2
 

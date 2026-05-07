@@ -12,15 +12,10 @@ Flow
 Input is always validated in a loop — no crashes on bad input.
 """
 from typing import Optional, Tuple
-
 from core.cards import Card, Color
 from core.game import GameState
 from agents.random_agent import BaseAgent
-
-# Ordered list used for the color selection menu
 _COLOR_OPTIONS = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW]
-
-
 class HumanAgent(BaseAgent):
     """Interactive CLI agent that reads moves from standard input.
 
@@ -31,10 +26,6 @@ class HumanAgent(BaseAgent):
     def __init__(self, name: str = "Human") -> None:
         """Initialising with a display name."""
         super().__init__(name)
-
-    # ------------------------------------------------------------------
-    # Public interface
-    # ------------------------------------------------------------------
 
     def choose_action(self, state: GameState) -> Tuple[Card, Optional[Color]]:
         """Displaying the board state and collecting a validated move.
@@ -50,10 +41,6 @@ class HumanAgent(BaseAgent):
         color = self._prompt_color() if card.is_wild() else None
         return card, color
 
-    # ------------------------------------------------------------------
-    # Display helpers
-    # ------------------------------------------------------------------
-
     def _print_state(self, state: GameState) -> None:
         """Printing board context before asking for a move."""
         print(f"\n{'─' * 40}")
@@ -66,10 +53,6 @@ class HumanAgent(BaseAgent):
         print("  Valid plays:")
         for i, card in enumerate(state.valid_plays):
             print(f"    [{i}] {card}")
-
-    # ------------------------------------------------------------------
-    # Input helpers
-    # ------------------------------------------------------------------
 
     def _prompt_card(self, valid_plays: list) -> Card:
         """Prompting for a valid play index, looping until input is good.

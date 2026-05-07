@@ -31,11 +31,8 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Optional
 from core.cards import Card, Color
 from core.game import GameState
-
-
 class BaseAgent(ABC):
     """Serving as the interface contract for all UNO agents.
-
     Args:
         name: Display name used in logs and tournament output.
     """
@@ -43,7 +40,6 @@ class BaseAgent(ABC):
     def __init__(self, name: str):
         """Initialising agent with a display name."""
         self.name = name
-
     @abstractmethod
     def choose_action(self, state: GameState) -> Tuple[Card, Optional[Color]]:
         """Selecting a card to play and optionally a wild color.
@@ -55,7 +51,6 @@ class BaseAgent(ABC):
         Returning (card, chosen_color) where chosen_color is None
         unless card is a wild type.
         """
-
     def __repr__(self) -> str:
         """Returning agent identifier string."""
         return f"{self.__class__.__name__}(name={self.name!r})"

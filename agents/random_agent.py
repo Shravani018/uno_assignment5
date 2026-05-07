@@ -31,7 +31,6 @@ from core.cards import Card, Color
 from core.game import GameState
 from agents.base_agent import BaseAgent
 
-
 # Selecting only from playable colors when choosing wild color
 _PLAY_COLORS = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW]
 
