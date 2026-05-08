@@ -1,6 +1,7 @@
 # UNO Agents
 
-A 2-player UNO game engine built to compare agent strategies: rule-based, tree search (MCTS), and reinforcement learning. The project generates its own training data via self-play -- no external dataset required.
+A 2-player UNO game engine built to compare agent strategies: rule-based, tree search (MCTS), and reinforcement learning. 
+The project generates its own training data via self-play.
 
 ---
 
@@ -96,7 +97,7 @@ Step 7 -- RL vs Rule            Key test: does learned policy beat heuristics
 Step 8 -- RL vs MCTS            Final comparison: best vs best
 ```
 
-Never skip steps. If an agent barely beats Random there is no point running it against stronger opponents.
+If an agent barely beats Random there is no point running it against stronger opponents.
 
 ---
 
@@ -158,8 +159,6 @@ python main.py
 ```
 
 Runs all three current matchups (Random vs Random, Rule vs Random, Rule vs Rule) and saves the Rule vs Rule dataset to `data/datasets/`.
-
-### Analyse the Rule vs Rule dataset
 
 
 ### Run tests
