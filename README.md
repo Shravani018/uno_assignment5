@@ -101,21 +101,25 @@ If an agent barely beats Random there is no point running it against stronger op
 
 ---
 
-## Results So Far (500 games each)
+## Results So Far 
 
-## Self-Play Evaluation Results
+## Self-Play Evaluation Results (10,000 games each)
 
-| Matchup | P0 Wins | P1 Wins | Avg Turns |
-|---|---:|---:|---:|
-| Random vs Random | 47.8% | 52.2% | 64.3 |
-| Rule vs Random | 54.8% | 45.2% | 61.6 |
-| Rule vs Rule | 49.8% | 50.2% | 60.3 |
+| Matchup | P0 Wins | P1 Wins | Draws | Avg Turns |
+|---|---:|---:|---:|---:|
+| Random vs Random | 50.2% | 49.8% | 0 | 62.6 |
+| Rule vs Random | 56.4% | 43.6% | 0 | 60.2 |
+| Random vs Rule | 45.2% | 54.8% | 0 | 61.0 |
+| Rule vs Rule | 52.1% | 47.9% | 1 | 60.8 |
+
 
 ## Verdict
 
-- The RuleAgent consistently outperforms the Random agent, achieving a 54.8% win rate over 500 games while also reducing the average game length from 64.3 to 61.6 turns.
-- This indicates that the heuristic strategy improves both efficiency and competitiveness compared to purely random play.
-- Rule vs Rule produces an approximately 50/50 split, which suggests the environment is reasonably balanced and does not heavily favor either player position.
+- Random vs Random -- engine is fair. 50.2% vs 49.8% is within normal statistical noise at 10,000 games. No positional bias exists.
+- Rule vs Random and Random vs Rule -- heuristics show a real edge. RuleAgent wins 56.4% going first and 54.8% going second. The gap between these two is only 1.6 percentage points, which is well within margin of error at this sample size. The honest conclusion is that RuleAgent holds a ~55-56% win rate against RandomAgent regardless of position. This is a genuine skill edge, not a positional artifact.
+- Rule vs Rule -- first-mover advantage is small but consistent. 52.1% vs 47.9% with identical agents isolates the positional edge at roughly 2 percentage points. This is statistically meaningful at 10,000 games but practically small.
+
+**Baseline for MCTS and RL: Any new agent must exceed 57% against RandomAgent and 53% against RuleAgent in either position before the result can be called a genuine improvement.**
 
 ---
 
