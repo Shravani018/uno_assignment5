@@ -16,3 +16,7 @@ run_self_play(RuleAgent("Rule"), RandomAgent("Random"),
 print("\n=== 3. Rule vs Rule ===")
 run_self_play(RuleAgent("Rule-A"), RuleAgent("Rule-B"),
               num_games=max, save_logs=False, save_dataset=True, base_seed=0)
+
+print("\n=== 4. Random vs Rule ===")
+run_self_play(RandomAgent("Random"),RuleAgent("Rule"),
+              num_games=max, save_logs=False, save_dataset=False, base_seed=0)
