@@ -1,6 +1,7 @@
 # This script runs self-play matches between different agents and collects data for training.
 import sys
 sys.path.insert(0, '.')
+from agents.bad_rule_agent import RuleBadAgent
 from agents.random_agent import RandomAgent
 from agents.rule_agent import RuleAgent
 from training.self_play import run_self_play
@@ -19,4 +20,12 @@ run_self_play(RuleAgent("Rule-A"), RuleAgent("Rule-B"),
 
 print("\n=== 4. Random vs Rule ===")
 run_self_play(RandomAgent("Random"),RuleAgent("Rule"),
+              num_games=max, save_logs=False, save_dataset=False, base_seed=0)
+
+print("\n=== 5. Rule Good vs Rule Bad ===")
+run_self_play(RuleAgent("Rule-Good"), RuleBadAgent("Rule-Bad"),
+              num_games=max, save_logs=False, save_dataset=False, base_seed=0)
+
+print("\n=== 6. Rule Good vs Rule Bad ===")
+run_self_play(RuleBadAgent("Rule-Bad"), RuleAgent("Rule-Good"),
               num_games=max, save_logs=False, save_dataset=False, base_seed=0)
