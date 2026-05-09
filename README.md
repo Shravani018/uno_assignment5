@@ -103,7 +103,7 @@ If an agent barely beats Random there is no point running it against stronger op
 
 **Results So Far**
 
-**Self-Play Evaluation Results (10,000 games each)**
+## Self-Play Evaluation Results (10,000 games each)
 
 | Matchup | P0 Wins | P1 Wins | Draws | Avg Turns |
 |---|---:|---:|---:|---:|
@@ -111,15 +111,23 @@ If an agent barely beats Random there is no point running it against stronger op
 | Rule vs Random | 56.4% | 43.6% | 0 | 60.2 |
 | Random vs Rule | 45.2% | 54.8% | 0 | 61.0 |
 | Rule vs Rule | 52.1% | 47.9% | 1 | 60.8 |
+| Rule Good vs Rule Bad | 59.1% | 40.9% | 0 | 59.2 |
+| Rule Bad vs Rule Good | 43.9% | 56.1% | 0 | 59.2 |
 
 
-**Verdict**
+## Verdict
 
-- Random vs Random - engine is fair. 50.2% vs 49.8% is within normal statistical noise at 10,000 games. No positional bias exists.
-- Rule vs Random and Random vs Rule - heuristics show a real edge. RuleAgent wins 56.4% going first and 54.8% going second. The gap between these two is only 1.6 percentage points, which is well within margin of error at this sample size. The honest conclusion is that RuleAgent holds a ~55-56% win rate against RandomAgent regardless of position. This is a genuine skill edge, not a positional artifact.
-- Rule vs Rule - first-mover advantage is small but consistent. 52.1% vs 47.9% with identical agents isolates the positional edge at roughly 2 percentage points. This is statistically meaningful at 10,000 games but practically small.
+- **Engine is fair.** Random vs Random lands at 50.2% vs 49.8%, well within noise. No positional bias exists in the engine.
 
-**Baseline for MCTS and RL: Any new agent must exceed 57% against RandomAgent and 53% against RuleAgent in either position before the result can be called a genuine improvement.**
+- **RuleAgent holds a genuine skill edge over Random.** Winning 56.4% going first and 54.8% going second, the 1.6 point gap between positions is within the margin of error. The honest conclusion is RuleAgent wins approximately 55-56% against RandomAgent regardless of who goes first. This is a real strategy advantage, not a positional artifact.
+
+- **First-mover advantage exists but is small.** Rule vs Rule gives the first player 52.1% with identical agents on both sides. This isolates position as worth roughly 2 percentage points. It is statistically real at this sample size but practically minor.
+
+- **RuleGood convincingly beats RuleBad.** Winning 59.1% going first and 56.1% going second, the average skill edge is approximately 57-58% across both positions. The 3 point gap between positions is larger than in any other matchup, suggesting the bad strategy is especially vulnerable to being exploited by whichever player acts first.
+
+- **RuleBad performs worse than Random against a skilled opponent.** RandomAgent wins 43.6-45.2% against RuleAgent. RuleBad wins only 40.9-43.9% against RuleGood. The confidence intervals barely touch, meaning actively bad strategy is measurably worse than random play when facing a competent opponent. This validates the bad agent design: it is not just different from RuleAgent, it is genuinely inferior.
+
+**Revised baselines for MCTS and RL.** Any new agent must exceed 57% against RandomAgent, 53% against RuleAgent, and 60% against RuleBadAgent in either position before a result is considered a genuine strategic improvement over the current rule-based tier.
 
 ---
 
