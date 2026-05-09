@@ -1,30 +1,30 @@
-# UNO Agents
+## UNO Agents
 
 A 2-player UNO game engine built to compare agent strategies: rule-based, tree search (MCTS), and reinforcement learning. 
 The project generates its own training data via self-play.
 
 ---
 
-## What Has Been Built
+**What Has Been Built**
 
-### Game Engine
+**Game Engine**
 A fully rule-compliant 2-player UNO engine. All game logic lives in one place. Agents interact with the engine through a clean interface -- they receive a state snapshot and return a card to play. No agent can access opponent cards or manipulate the engine directly.
 
-### Agents
-- **RandomAgent** -- plays any legal card at random. Serves as the performance floor. Every other agent must beat this to demonstrate any strategic value.
-- **RuleAgent** -- plays greedily using hand-coded heuristics. The primary baseline all stronger agents are measured against.
-- **MCTS** -- todo
-- **RL** -- todo
+**Agents**
+- **RandomAgent** - plays any legal card at random. Serves as the performance floor. Every other agent must beat this to demonstrate any strategic value.
+- **RuleAgent** - plays greedily using hand-coded heuristics. The primary baseline all stronger agents are measured against.
+- **MCTS** - todo
+- **RL** - todo
 
-### Self-Play Pipeline
+**Self-Play Pipeline**
 Runs any two agents against each other for N games, logging every turn as a `(state, action, reward)` tuple to a JSONL dataset file. Used to generate training data for future RL training.
 
-### Feature Encoder
+**Feature Encoder**
 Converts a game state into a 29-length float vector for use in ML models. One-hot encodes top card color, type, and value. Normalises hand sizes and draw pile count to [0, 1].
 
 ---
 
-## UNO Rules Implemented
+**UNO Rules Implemented**
 
 **A card can be played if:**
 - It shares the active color with the top card
@@ -53,15 +53,15 @@ First player to empty their hand wins. If 500 turns pass without a winner the ga
 
 ---
 
-## RuleAgent Strategy
+**RuleAgent Strategy**
 
 RuleAgent uses a two-phase decision process each turn.
 
-**Phase 1 -- Threat detection**
+**Phase 1 - Threat detection**
 
 If the opponent holds 2 or fewer cards, threat mode activates. The agent plays its strongest card immediately without conserving wilds.
 
-**Phase 2 -- Normal play**
+**Phase 2 - Normal play**
 
 Outside threat mode the agent avoids spending wilds unnecessarily, working through this priority ladder on non-wild cards first:
 
@@ -81,7 +81,7 @@ When a wild is played, the agent counts the colors in its current valid plays an
 
 ---
 
-## Benchmark Order
+**Benchmark Order**
 
 Run matchups in this order. Each step answers a specific question before moving to the next.
 
@@ -101,9 +101,9 @@ If an agent barely beats Random there is no point running it against stronger op
 
 ---
 
-## Results So Far 
+**Results So Far**
 
-## Self-Play Evaluation Results (10,000 games each)
+**Self-Play Evaluation Results (10,000 games each)**
 
 | Matchup | P0 Wins | P1 Wins | Draws | Avg Turns |
 |---|---:|---:|---:|---:|
@@ -113,19 +113,19 @@ If an agent barely beats Random there is no point running it against stronger op
 | Rule vs Rule | 52.1% | 47.9% | 1 | 60.8 |
 
 
-## Verdict
+**Verdict**
 
-- Random vs Random -- engine is fair. 50.2% vs 49.8% is within normal statistical noise at 10,000 games. No positional bias exists.
-- Rule vs Random and Random vs Rule -- heuristics show a real edge. RuleAgent wins 56.4% going first and 54.8% going second. The gap between these two is only 1.6 percentage points, which is well within margin of error at this sample size. The honest conclusion is that RuleAgent holds a ~55-56% win rate against RandomAgent regardless of position. This is a genuine skill edge, not a positional artifact.
-- Rule vs Rule -- first-mover advantage is small but consistent. 52.1% vs 47.9% with identical agents isolates the positional edge at roughly 2 percentage points. This is statistically meaningful at 10,000 games but practically small.
+- Random vs Random - engine is fair. 50.2% vs 49.8% is within normal statistical noise at 10,000 games. No positional bias exists.
+- Rule vs Random and Random vs Rule - heuristics show a real edge. RuleAgent wins 56.4% going first and 54.8% going second. The gap between these two is only 1.6 percentage points, which is well within margin of error at this sample size. The honest conclusion is that RuleAgent holds a ~55-56% win rate against RandomAgent regardless of position. This is a genuine skill edge, not a positional artifact.
+- Rule vs Rule - first-mover advantage is small but consistent. 52.1% vs 47.9% with identical agents isolates the positional edge at roughly 2 percentage points. This is statistically meaningful at 10,000 games but practically small.
 
 **Baseline for MCTS and RL: Any new agent must exceed 57% against RandomAgent and 53% against RuleAgent in either position before the result can be called a genuine improvement.**
 
 ---
 
-## How to Run
+**How to Run**
 
-### Play against RuleAgent
+**Play against RuleAgent**
 
 ```bash
 python play_human.py
@@ -156,7 +156,7 @@ Your full hand is displayed each turn. Cards marked `[* N]` are playable -- ente
   Select [0-2] or 'd' to draw:
 ```
 
-### Run self-play and generate dataset
+**Run self-play and generate dataset**
 
 ```bash
 python main.py
@@ -165,7 +165,7 @@ python main.py
 Runs all three current matchups (Random vs Random, Rule vs Random, Rule vs Rule) and saves the Rule vs Rule dataset to `data/datasets/`.
 
 
-### Run tests
+**Run tests**
 
 ```bash
 python -m unittest discover tests/ -v
@@ -175,7 +175,7 @@ Runs 47 tests covering deck composition, card validity rules, special card effec
 
 ---
 
-## Dataset Format
+**Dataset Format**
 
 Each row in `data/datasets/rule-a_vs_rule-b.jsonl` represents one turn:
 
@@ -198,15 +198,3 @@ Each row in `data/datasets/rule-a_vs_rule-b.jsonl` represents one turn:
 | `reward` | +1.0 win, -1.0 loss, -0.5 draw (assigned at game end) |
 | `next_state` | Encoded state after the turn, `null` on terminal turns |
 | `done` | True on the final turn of the game |
-
-**State vector layout:**
-
-| Indices | Width | Description |
-|---|---|---|
-| 0-4 | 5 | Top card color (one-hot) |
-| 5-10 | 6 | Top card type (one-hot) |
-| 11-20 | 10 | Top card value 0-9 (one-hot) |
-| 21-25 | 5 | Active color (one-hot) |
-| 26 | 1 | My hand size / 20 |
-| 27 | 1 | Opponent hand size / 20 |
-| 28 | 1 | Draw pile size / 108 |
