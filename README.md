@@ -103,7 +103,7 @@ If an agent barely beats Random there is no point running it against stronger op
 
 **Results So Far**
 
-## Self-Play Evaluation Results (10,000 games each)
+**Self-Play Evaluation Results (10,000 games each)**
 
 | Matchup | P0 Wins | P1 Wins | Draws | Avg Turns |
 |---|---:|---:|---:|---:|
@@ -115,7 +115,7 @@ If an agent barely beats Random there is no point running it against stronger op
 | Rule Bad vs Rule Good | 43.9% | 56.1% | 0 | 59.2 |
 
 
-## Verdict
+**Verdict**
 
 - **Engine is fair.** Random vs Random lands at 50.2% vs 49.8%, well within noise. No positional bias exists in the engine.
 
