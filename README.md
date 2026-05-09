@@ -125,7 +125,7 @@ If an agent barely beats Random there is no point running it against stronger op
 
 - **RuleGood convincingly beats RuleBad.** Winning 59.1% going first and 56.1% going second, the average skill edge is approximately 57-58% across both positions. The 3 point gap between positions is larger than in any other matchup, suggesting the bad strategy is especially vulnerable to being exploited by whichever player acts first.
 
-- **RuleBad performs worse than Random against a skilled opponent.** RandomAgent wins 43.6-45.2% against RuleAgent. RuleBad wins only 40.9-43.9% against RuleGood. The confidence intervals barely touch, meaning actively bad strategy is measurably worse than random play when facing a competent opponent. This validates the bad agent design: it is not just different from RuleAgent, it is genuinely inferior.
+- **RuleBad performs worse than Random.** RandomAgent wins 43.6-45.2% against RuleAgent. RuleBad wins only 40.9-43.9% against RuleGood. The confidence intervals barely touch, meaning actively bad strategy is measurably worse than random play when facing a competent opponent. This validates the bad agent design: it is not just different from RuleAgent, it is genuinely inferior.
 
 **Revised baselines for MCTS and RL.** Any new agent must exceed 57% against RandomAgent, 53% against RuleAgent, and 60% against RuleBadAgent in either position before a result is considered a genuine strategic improvement over the current rule-based tier.
 
