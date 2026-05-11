@@ -78,7 +78,7 @@ body,.stMarkdown,.stText { font-family:'Nunito Sans',sans-serif !important; colo
 .card-back-sm {
   display:inline-flex; align-items:center; justify-content:center;
   width:62px; height:96px; border-radius:12px;
-  background:#0066CC; border:3px solid rgba(255,255,255,.3);
+  background:#000000;border:3px solid rgba(255,255,255,.3);
   font-family:'Nunito',sans-serif; font-weight:900; font-size:18px; color:#FFD600;
   box-shadow:2px 4px 10px rgba(0,0,0,.35); position:relative;
 }
@@ -124,7 +124,7 @@ body,.stMarkdown,.stText { font-family:'Nunito Sans',sans-serif !important; colo
 .draw-pile-vis {
   display:inline-flex; align-items:center; justify-content:center;
   width:70px; height:108px; border-radius:13px;
-  background:#0066CC; border:3px solid rgba(255,255,255,.3);
+  background:#000000;border:3px solid rgba(255,255,255,.3);
   font-family:'Nunito',sans-serif; font-weight:900; font-size:22px; color:#FFD600;
   box-shadow:2px 4px 10px rgba(0,0,0,.35); position:relative;
 }
@@ -185,7 +185,8 @@ def _card_html(card: Card, playable: bool = False, override_color: Color | None 
     txt = COLOR_TEXT[c]
     lbl = _lbl(card)
     bdr = "rgba(0,0,0,.4)" if c == Color.YELLOW else "rgba(255,255,255,.45)"
-    cls = "uno-card" + (" card-playable" if playable else " card-dimmed")
+    # cls = "uno-card" + (" card-playable" if playable else " card-dimmed")
+    cls = "uno-card" + (" card-playable" if playable else "")
     return (
         f'<div class="{cls}" style="background:{bg};color:{txt};border-color:{bdr};">'
         f'<span class="ct">{lbl}</span><span class="cm">{lbl}</span><span class="cb">{lbl}</span>'
@@ -405,10 +406,10 @@ def _page_game() -> None:
             )
             pw1, pw2, pw3, pw4 = st.columns(4)
             wild_opts = [
-                (pw1, Color.RED,    "🔴 Red"),
-                (pw2, Color.BLUE,   "🔵 Blue"),
-                (pw3, Color.GREEN,  "🟢 Green"),
-                (pw4, Color.YELLOW, "🟡 Yellow"),
+                (pw1, Color.RED,    "🔴"),
+                (pw2, Color.BLUE,   "🔵"),
+                (pw3, Color.GREEN,  "🟢"),
+                (pw4, Color.YELLOW, "🟡"),
             ]
             for wcol, cval, cname in wild_opts:
                 with wcol:
@@ -421,19 +422,26 @@ def _page_game() -> None:
         discard_override = cur_color if top_card.is_wild() else None
         top_html = _card_html(top_card, playable=False, override_color=discard_override)
         st.markdown(
-            f'<div style="display:flex;justify-content:center;align-items:flex-start;gap:36px;padding:12px 0 4px;">'
-            f'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">'
-            f'  <span class="pile-title">Draw Pile</span>'
-            f'  <div class="draw-pile-vis">UNO</div>'
-            f'  <span class="pile-count">{deck.draw_pile_size} cards</span>'
-            f'</div>'
-            f'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">'
-            f'  <span class="pile-title">Discard</span>'
-            f'  {top_html}'
-            f'</div>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
+    f'<div style="display:flex;justify-content:center;align-items:center;gap:52px;padding:18px 0 8px;">'
+
+    # Draw pile (smaller + dimmer)
+    f'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.55;transform:scale(.9);">'
+    f'  <span class="pile-title">Draw Pile</span>'
+    f'  <div class="draw-pile-vis" style="transform:scale(.92);">UNO</div>'
+    f'  <span class="pile-count">{deck.draw_pile_size} cards</span>'
+    f'</div>'
+
+    # Main active card (larger + glowing)
+    f'<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">'
+    f'  <span class="pile-title" style="color:#FFD600;font-size:13px;">Card In Play</span>'
+    f'  <div style="transform:scale(1.32);filter:drop-shadow(0 0 24px rgba(255,214,0,.55));">'
+    f'    {top_html}'
+    f'  </div>'
+    f'</div>'
+
+    f'</div>',
+    unsafe_allow_html=True,
+)
 
         # Draw Card button
         draw_disabled = not s.human_turn or bool(s.drawn_this_turn) or bool(s.pending_wild)
