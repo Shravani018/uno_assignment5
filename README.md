@@ -181,6 +181,12 @@ python -m unittest discover tests/ -v
 
 Runs 47 tests covering deck composition, card validity rules, special card effects, and agent behaviour. All must pass before any new agent is added.
 
+**User Interface**
+```bash
+streamlit run app.py
+```
+*WIP*: Player 1 is always **Human** and Player 2 can be either of the agents **(Greedy, Anti-Greedy, MCTS, RL)**
+
 ---
 
 **Dataset Format**
