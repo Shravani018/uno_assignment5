@@ -15,11 +15,13 @@ from agents.mcts_agent import MCTSAgent
 from agents.random_agent import RandomAgent
 from agents.rule_agent import RuleAgent
 from agents.bad_rule_agent import RuleBadAgent
+from agents.rl_agent import RLAgent
 
 AGENT_MAP = {
     "Random Bot":       RandomAgent,
     "Greedy Bot":       RuleAgent,
     "Anti-Greedy Bot":  RuleBadAgent,
+    "RL Bot":           RLAgent,
     "MCTS Bot":         MCTSAgent,
 }
 

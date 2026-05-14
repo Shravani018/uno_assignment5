@@ -37,7 +37,7 @@ run_self_play(
     RuleAgent("Rule-B"),
     num_games=max,
     save_logs=False,
-    save_dataset=True,
+    save_dataset=False,
     base_seed=0,
 )
 
