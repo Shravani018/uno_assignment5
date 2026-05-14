@@ -89,7 +89,6 @@ Run matchups in this order. Each step answers a specific question before moving 
 Step 1 -- Random vs Random      Verify engine fairness (~50/50 expected)
 Step 2 -- Rule vs Random        Measure how much heuristics gain over random play
 Step 3 -- Rule vs Rule          Confirm baseline parity (~50/50 expected)
---------------------- TODO ----------------------------------------------
 Step 4 -- MCTS vs Random        Confirm tree search dominates random 
 Step 5 -- MCTS vs Rule          Key test: does lookahead beat heuristics
 Step 6 -- RL vs Random          Confirm RL dominates random
