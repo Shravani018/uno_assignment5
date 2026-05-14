@@ -13,7 +13,7 @@ A fully rule-compliant 2-player UNO engine. All game logic lives in one place. A
 **Agents**
 - **RandomAgent** - plays any legal card at random. Serves as the performance floor. Every other agent must beat this to demonstrate any strategic value.
 - **RuleAgent** - plays greedily using hand-coded heuristics. The primary baseline all stronger agents are measured against.
-- **MCTS** - todo
+- **MCTSAgent** - uses Information Set MCTS (ISMCTS) with UCB1. Each simulation re-samples the opponent hand independently to handle partial observability, building a single shared tree across all samples. Nodes track an `availability` count (times the node was reachable across samples) used as the UCB1 denominator instead of parent visit count. Defaults: 100 simulations per decision, exploration constant c=1.41, rollout depth 150.
 - **RL** - todo
 
 **Self-Play Pipeline**
@@ -113,6 +113,8 @@ If an agent barely beats Random there is no point running it against stronger op
 | Rule vs Rule | 52.1% | 47.9% | 1 | 60.8 |
 | Rule Good vs Rule Bad | 59.1% | 40.9% | 0 | 59.2 |
 | Rule Bad vs Rule Good | 43.9% | 56.1% | 0 | 59.2 |
+| MCTS vs Random | 59.6% | 40.4% | 1 | 55.6 |
+| MCTS vs Rule | 52.7% | 47.3% | 0 | 57.2 |
 
 
 **Verdict**

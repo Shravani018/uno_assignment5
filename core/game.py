@@ -52,6 +52,7 @@ class GameState:
     hand_sizes: List[int]
     draw_pile_size: int
     valid_plays: List[Card]
+    my_full_hand: List[Card] = field(default_factory=list)
 
 
 @dataclass
@@ -112,6 +113,7 @@ class UnoGame:
             hand_sizes=[h.size() for h in self.hands],
             draw_pile_size=self.deck.draw_pile_size,
             valid_plays=valid,
+            my_full_hand=list(hand.cards),
         )
 
     def play_turn(self) -> TurnResult:

@@ -11,14 +11,16 @@ from core.cards import Card, Color, CardType
 from core.deck import Deck
 from core.hand import Hand
 from core.rules import get_valid_plays, apply_card_effect
+from agents.mcts_agent import MCTSAgent
 from agents.random_agent import RandomAgent
 from agents.rule_agent import RuleAgent
 from agents.bad_rule_agent import RuleBadAgent
 
 AGENT_MAP = {
-    "Random Bot":  RandomAgent,
-    "Greedy Bot":   RuleAgent,
+    "Random Bot":       RandomAgent,
+    "Greedy Bot":       RuleAgent,
     "Anti-Greedy Bot":  RuleBadAgent,
+    "MCTS Bot":         MCTSAgent,
 }
 
 COLOR_HEX = {

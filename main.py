@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, ".")
 from agents.bad_rule_agent import RuleBadAgent
+from agents.mcts_agent import MCTSAgent
 from agents.random_agent import RandomAgent
 from agents.rule_agent import RuleAgent
 from agents.rl_agent import RLAgent
@@ -88,6 +89,26 @@ run_self_play(
     rl,
     RuleAgent("Rule"),
     num_games=max,
+    save_logs=False,
+    save_dataset=False,
+    base_seed=0,
+)
+
+print("\n=== 9. MCTS vs Random ===")
+run_self_play(
+    MCTSAgent("MCTS"),
+    RandomAgent("Random"),
+    num_games=10_000,
+    save_logs=False,
+    save_dataset=False,
+    base_seed=0,
+)
+
+print("\n=== 10. MCTS vs Rule ===")
+run_self_play(
+    MCTSAgent("MCTS"),
+    RuleAgent("Rule"),
+    num_games=10_000,
     save_logs=False,
     save_dataset=False,
     base_seed=0,
