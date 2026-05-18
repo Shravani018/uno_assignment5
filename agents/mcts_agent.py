@@ -214,15 +214,44 @@ class MCTSNode:
 # Rollout
 # ---------------------------------------------------------------------------
 
-def _rollout(sim: SimulationState, rollout_depth: int) -> float:
-    """Random playout from sim (modified in-place copy). Returns win prob for player 0."""
+_CARD_TYPE_PRIORITY = {
+    CardType.WILD_DRAW_FOUR: 5,
+    CardType.DRAW_TWO: 4,
+    CardType.SKIP: 3,
+    CardType.REVERSE: 2,
+    CardType.NUMBER: 1,
+    CardType.WILD: 0,
+}
+
+
+def _rule_pick(valid: List[Card]) -> Tuple[Card, Optional[Color]]:
+    """Lightweight rule-based card selection for heavy rollouts."""
+    non_wild = [c for c in valid if not c.is_wild()]
+    pool = non_wild if non_wild else valid
+    card = max(pool, key=lambda c: (
+        _CARD_TYPE_PRIORITY.get(c.card_type, 0),
+        c.value if c.card_type == CardType.NUMBER else 0,
+    ))
+    color = _best_color(valid) if card.is_wild() else None
+    return card, color
+
+
+def _rollout(sim: SimulationState, rollout_depth: int,
+             policy: str = "random") -> float:
+    """Playout from sim (modified in-place). Returns win prob for player 0.
+
+    policy: "random" for uniform random play, "rule" for lightweight heuristic.
+    """
     for _ in range(rollout_depth):
         valid = sim.get_valid_plays()
         if not valid:
             sim.draw_step()
             continue
-        card = random.choice(valid)
-        color = random.choice(_PLAY_COLORS) if card.is_wild() else None
+        if policy == "rule":
+            card, color = _rule_pick(valid)
+        else:
+            card = random.choice(valid)
+            color = random.choice(_PLAY_COLORS) if card.is_wild() else None
         winner = sim.step(card, color)
         if winner is not None:
             return 1.0 if winner == 0 else 0.0
@@ -251,14 +280,16 @@ class MCTSAgent(BaseAgent):
     def __init__(
         self,
         name: str = "MCTSAgent",
-        num_simulations: int = 100,
-        c: float = 1.41,
-        rollout_depth: int = 150,
+        num_simulations: int = 200,
+        c: float = 1.0,
+        rollout_depth: int = 20,
+        rollout_policy: str = "random",
     ) -> None:
         super().__init__(name)
         self.num_simulations = num_simulations
         self.c = c
         self.rollout_depth = rollout_depth
+        self.rollout_policy = rollout_policy
 
     def choose_action(self, state: GameState) -> Tuple[Card, Optional[Color]]:
         """Run ISMCTS and return the best (card, color) action.
@@ -316,7 +347,7 @@ class MCTSAgent(BaseAgent):
                     continue
 
             # 4. Rollout (sim is already at the correct state after expansion)
-            result = _rollout(sim, self.rollout_depth)
+            result = _rollout(sim, self.rollout_depth, self.rollout_policy)
 
             # 5. Backpropagation
             self._backprop(node, result)
@@ -328,9 +359,6 @@ class MCTSAgent(BaseAgent):
 
         best = max(root.children, key=lambda n: n.visits)
         card, color = best.action  # type: ignore[misc]
-
-        if card is not None and card.is_wild():
-            color = _best_color(state.valid_plays)
 
         return card, color  # type: ignore[return-value]
 

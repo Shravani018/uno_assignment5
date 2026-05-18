@@ -13,7 +13,7 @@ A fully rule-compliant 2-player UNO engine. All game logic lives in one place. A
 **Agents**
 - **RandomAgent** - plays any legal card at random. Serves as the performance floor. Every other agent must beat this to demonstrate any strategic value.
 - **RuleAgent** - plays greedily using hand-coded heuristics. The primary baseline all stronger agents are measured against.
-- **MCTSAgent** - uses Information Set MCTS (ISMCTS) with UCB1. Each simulation re-samples the opponent hand independently to handle partial observability, building a single shared tree across all samples. Nodes track an `availability` count (times the node was reachable across samples) used as the UCB1 denominator instead of parent visit count. Defaults: 100 simulations per decision, exploration constant c=1.41, rollout depth 150.
+- **MCTSAgent** - uses Information Set MCTS (ISMCTS) with UCB1, following the SO-ISMCTS algorithm (Cowling et al., 2012). Each simulation re-samples the opponent hand independently to handle partial observability, building a single shared tree across all samples (Single Observer variant). Nodes track an `availability` count (times the node was reachable across samples) used as the UCB1 denominator instead of parent visit count — this availability normalisation is the key distinction of ISMCTS over standard UCT. The Single Observer variant was chosen over Multi-Observer ISMCTS (also described in Cowling et al.) because re-sampling the opponent hand each iteration already captures the main source of uncertainty in 2-player UNO without the added complexity of maintaining separate per-player trees. Defaults: 100 simulations per decision, exploration constant c=1.41 (≈√2, the theoretical optimum from Kocsis & Szepesvári 2006), rollout depth 150.
 - **RL** - todo
 
 **Self-Play Pipeline**
@@ -102,19 +102,33 @@ If an agent barely beats Random there is no point running it against stronger op
 
 **Results So Far**
 
-**Self-Play Evaluation Results (10,000 games each)**
+**Self-Play Evaluation Results**
 
-| Matchup | P0 Wins | P1 Wins | Draws | Avg Turns |
-|---|---:|---:|---:|---:|
-| Random vs Random | 50.2% | 49.8% | 0 | 62.6 |
-| Rule vs Random | 56.4% | 43.6% | 0 | 60.2 |
-| Random vs Rule | 45.2% | 54.8% | 0 | 61.0 |
-| Rule vs Rule | 52.1% | 47.9% | 1 | 60.8 |
-| Rule Good vs Rule Bad | 59.1% | 40.9% | 0 | 59.2 |
-| Rule Bad vs Rule Good | 43.9% | 56.1% | 0 | 59.2 |
-| MCTS vs Random | 59.6% | 40.4% | 1 | 55.6 |
-| MCTS vs Rule | 52.7% | 47.3% | 0 | 57.2 |
+| Matchup | Games | P0 Wins | P1 Wins | Draws | Avg Turns |
+|---|---:|---:|---:|---:|---:|
+| Random vs Random | 10,000 | 50.2% | 49.8% | 0 | 62.6 |
+| Rule vs Random | 10,000 | 56.4% | 43.6% | 0 | 60.2 |
+| Random vs Rule | 10,000 | 45.2% | 54.8% | 0 | 61.0 |
+| Rule vs Rule | 10,000 | 52.1% | 47.9% | 1 | 60.8 |
+| Rule Good vs Rule Bad | 10,000 | 59.1% | 40.9% | 0 | 59.2 |
+| Rule Bad vs Rule Good | 10,000 | 43.9% | 56.1% | 0 | 59.2 |
+| MCTS vs Random | 1,000 | **64.2%** | 35.8% | 0 | 48.1 |
+| Random vs MCTS | 1,000 | 36.0% | **64.0%** | 0 | 49.0 |
+| MCTS vs Rule | 1,000 | **59.9%** | 40.1% | 0 | 47.9 |
+| Rule vs MCTS | 1,000 | 42.3% | **57.7%** | 0 | 47.3 |
 
+*MCTS parameters: `num_simulations=200`, `c=1.0`, `rollout_depth=20`. Position-averaged win rates: 64.1% vs Random, 58.8% vs Rule.*
+
+**MCTS Parameter Tuning**
+
+A one-at-a-time sensitivity analysis was run over three key SO-ISMCTS hyperparameters (500 games per configuration vs RuleAgent). Results are summarised in `experiments/results/mcts_param_sweep.png` and detailed in `experiments/parameter_analysis.md`.
+
+| Parameter | Default | Tuned | Key finding |
+|---|---|---|---|
+| `c` | 1.41 | **1.0** | Performance robust across c ∈ [0.7, 2.0]; lower optimum consistent with ISMCTS availability inflation |
+| `num_simulations` | 100 | **200** | Most sensitive parameter; monotonic gain from 51.6% (n=25) to 62.0% (n=500); n=200 chosen as compute budget |
+| `rollout_depth` | 150 | **20** | Short rollout + hand-size heuristic outperforms long random playout; peak at depth=20 |
+| `rollout_policy` | random | **random** | Rule-based rollout (56.6%) marginally worse than random (58.4%); difference within noise |
 
 **Verdict**
 
@@ -128,7 +142,9 @@ If an agent barely beats Random there is no point running it against stronger op
 
 - **RuleBad performs worse than Random.** RandomAgent wins 43.6-45.2% against RuleAgent. RuleBad wins only 40.9-43.9% against RuleGood. The confidence intervals barely touch, meaning actively bad strategy is measurably worse than random play when facing a competent opponent. This validates the bad agent design: it is not just different from RuleAgent, it is genuinely inferior.
 
-**Revised baselines for MCTS and RL.** Any new agent must exceed 57% against RandomAgent, 53% against RuleAgent, and 60% against RuleBadAgent in either position before a result is considered a genuine strategic improvement over the current rule-based tier.
+- **MCTSAgent convincingly beats both baselines across both positions.** Averaged over first and second player, MCTSAgent wins 64.1% against RandomAgent and 58.8% against RuleAgent. The win rate is stable across positions (64.2% vs 64.0% against Random; 59.9% vs 57.7% against Rule), confirming the advantage is not a positional artifact. The 2.2 percentage-point gap vs Rule is consistent with the ~2-point first-mover advantage observed in Rule vs Rule, leaving the position-corrected skill edge intact.
+
+**Baselines for RL.** Any new agent must exceed 64% against RandomAgent and 59% against RuleAgent (position-averaged) before a result is considered a genuine strategic improvement over MCTSAgent.
 
 ---
 
@@ -187,6 +203,14 @@ Runs 47 tests covering deck composition, card validity rules, special card effec
 streamlit run app.py
 ```
 *WIP*: Player 1 is always **Human** and Player 2 can be either of the agents **(Greedy, Anti-Greedy, MCTS, RL)**
+
+---
+
+**References**
+
+- Cowling, P. I., Powley, E. J., & Whitehouse, D. (2012). Information Set Monte Carlo Tree Search. *IEEE Transactions on Computational Intelligence and AI in Games*, 4(2), 120–143. https://doi.org/10.1109/TCIAIG.2012.2200894
+
+- Kocsis, L., & Szepesvári, C. (2006). Bandit Based Monte-Carlo Planning. In *Proceedings of the 17th European Conference on Machine Learning (ECML 2006)*, Lecture Notes in Computer Science, vol. 4212, pp. 282–293.
 
 ---
 

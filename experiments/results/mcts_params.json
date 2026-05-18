@@ -1,0 +1,238 @@
+{
+  "c": [
+    {
+      "param": "c",
+      "value": 0.35,
+      "win_rate": 0.548,
+      "wins": [
+        274,
+        226
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 53.9
+    },
+    {
+      "param": "c",
+      "value": 0.7,
+      "win_rate": 0.568,
+      "wins": [
+        284,
+        216
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 56.3
+    },
+    {
+      "param": "c",
+      "value": 1.0,
+      "win_rate": 0.57,
+      "wins": [
+        285,
+        215
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 51.6
+    },
+    {
+      "param": "c",
+      "value": 1.41,
+      "win_rate": 0.536,
+      "wins": [
+        268,
+        232
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 51.9
+    },
+    {
+      "param": "c",
+      "value": 2.0,
+      "win_rate": 0.568,
+      "wins": [
+        284,
+        216
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 52.2
+    },
+    {
+      "param": "c",
+      "value": 3.0,
+      "win_rate": 0.53,
+      "wins": [
+        265,
+        235
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 51.9
+    }
+  ],
+  "num_simulations": [
+    {
+      "param": "num_simulations",
+      "value": 25,
+      "win_rate": 0.516,
+      "wins": [
+        258,
+        242
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 54.9
+    },
+    {
+      "param": "num_simulations",
+      "value": 50,
+      "win_rate": 0.546,
+      "wins": [
+        273,
+        227
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 52.9
+    },
+    {
+      "param": "num_simulations",
+      "value": 100,
+      "win_rate": 0.536,
+      "wins": [
+        268,
+        232
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 51.9
+    },
+    {
+      "param": "num_simulations",
+      "value": 200,
+      "win_rate": 0.576,
+      "wins": [
+        288,
+        212
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 50.6
+    },
+    {
+      "param": "num_simulations",
+      "value": 500,
+      "win_rate": 0.62,
+      "wins": [
+        310,
+        190
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 48.6
+    }
+  ],
+  "rollout_depth": [
+    {
+      "param": "rollout_depth",
+      "value": 10,
+      "win_rate": 0.556,
+      "wins": [
+        278,
+        222
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 48.2
+    },
+    {
+      "param": "rollout_depth",
+      "value": 20,
+      "win_rate": 0.58,
+      "wins": [
+        290,
+        210
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 48.3
+    },
+    {
+      "param": "rollout_depth",
+      "value": 30,
+      "win_rate": 0.558,
+      "wins": [
+        279,
+        221
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 50.8
+    },
+    {
+      "param": "rollout_depth",
+      "value": 50,
+      "win_rate": 0.546,
+      "wins": [
+        273,
+        227
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 51.1
+    },
+    {
+      "param": "rollout_depth",
+      "value": 100,
+      "win_rate": 0.536,
+      "wins": [
+        268,
+        232
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 53.3
+    }
+  ],
+  "rollout_policy": [
+    {
+      "param": "rollout_policy",
+      "value": "random",
+      "win_rate": 0.584,
+      "wins": [
+        292,
+        208
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 49.296,
+      "elapsed_s": 336.3,
+      "config": {
+        "n": 100,
+        "c": 1.0,
+        "depth": 20
+      }
+    },
+    {
+      "param": "rollout_policy",
+      "value": "rule",
+      "win_rate": 0.566,
+      "wins": [
+        283,
+        217
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 47.468,
+      "elapsed_s": 329.2,
+      "config": {
+        "n": 100,
+        "c": 1.0,
+        "depth": 20
+      }
+    }
+  ]
+}
