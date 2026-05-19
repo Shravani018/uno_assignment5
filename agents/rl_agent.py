@@ -83,10 +83,24 @@ from training.feature_encoder import encode_state, encode_card
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
+# Layout:
+#   0-  4  top_card color          one-hot (5)
+#   5- 10  top_card type           one-hot (6)
+#  11- 20  top_card value          one-hot (10)
+#  21- 25  current_color           one-hot (5)
+#  26- 28  scalars: my_hand/20, opp_hand/20, draw_pile/108  (3)
+#  29- 33  count of each color in valid_plays, normalised    (5)
+#  34- 39  count of each card type in valid_plays, normalised(6)
+#  40- 49  count of each value 0-9 in valid_plays, normalised(10)
+#  50      fraction of hand that is playable                 (1)
+#  51      1.0 if any wild in valid_plays, else 0.0          (1)
+#  52      1.0 if any WD4 in valid_plays, else 0.0           (1)
+#  53      1.0 if opponent has <= 2 cards (threat), else 0.0 (1)
+
 # Input to the network: state vector + one card vector
-_STATE_DIM: int = 29  # must match EncoderConfig.vector_size()
-_CARD_DIM: int = 21  # must match len(encode_card(...))
-_INPUT_DIM: int = _STATE_DIM + _CARD_DIM  # 50
+_STATE_DIM: int = 54
+_CARD_DIM: int = 21
+_INPUT_DIM: int = _STATE_DIM + _CARD_DIM
 
 # Non-wild colors available for wild color selection
 _PLAY_COLORS: List[Color] = [
@@ -192,6 +206,99 @@ class RLAgent(BaseAgent):
         self.loss_fn = nn.MSELoss()
 
     # ── Inference ─────────────────────────────────────────────────────────────
+    def _encode_state(self, state: GameState) -> List[float]:
+        """Building an enriched state vector from GameState without my_hand.
+
+        Uses valid_plays to recover hand composition information that the
+        base encoder discards.  This replaces the imported encode_state()
+        from feature_encoder.py entirely for the RL agent.
+
+        Args:
+            state: Current game state snapshot.
+
+        Returning a list of _STATE_DIM floats.
+        """
+        vec: List[float] = []
+
+        # ── Top card (21 floats, same as feature_encoder) ─────────────────
+        _COLORS = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.WILD]
+        _CARD_TYPES = [
+            CardType.NUMBER,
+            CardType.SKIP,
+            CardType.REVERSE,
+            CardType.DRAW_TWO,
+            CardType.WILD,
+            CardType.WILD_DRAW_FOUR,
+        ]
+
+        vec.extend([1.0 if c == state.top_card.color else 0.0 for c in _COLORS])
+        vec.extend([1.0 if t == state.top_card.card_type else 0.0 for t in _CARD_TYPES])
+        vec.extend(
+            [
+                1.0
+                if (state.top_card.value is not None and i == state.top_card.value)
+                else 0.0
+                for i in range(10)
+            ]
+        )
+
+        # ── Current color (5 floats) ───────────────────────────────────────
+        vec.extend([1.0 if c == state.current_color else 0.0 for c in _COLORS])
+
+        # ── Scalars (3 floats) ────────────────────────────────────────────
+        my_idx = state.current_player
+        opp_idx = 1 - my_idx
+        vec.append(min(state.hand_sizes[my_idx], 20.0) / 20.0)
+        vec.append(min(state.hand_sizes[opp_idx], 20.0) / 20.0)
+        vec.append(min(state.draw_pile_size, 108.0) / 108.0)
+
+        # ── Valid plays composition (22 floats) ────────────────────────────
+        plays = state.valid_plays
+        num_plays = max(len(plays), 1)  # avoid division by zero
+
+        # Color counts in valid_plays (5 floats)
+        vec.extend(
+            [sum(1 for c in plays if c.color == col) / num_plays for col in _COLORS]
+        )
+
+        # Card type counts in valid_plays (6 floats)
+        vec.extend(
+            [
+                sum(1 for c in plays if c.card_type == ct) / num_plays
+                for ct in _CARD_TYPES
+            ]
+        )
+
+        # Value counts 0-9 in valid_plays (10 floats)
+        vec.extend(
+            [
+                sum(1 for c in plays if c.card_type == CardType.NUMBER and c.value == v)
+                / num_plays
+                for v in range(10)
+            ]
+        )
+
+        # ── Hand-level summary (4 floats) ─────────────────────────────────
+        hand_size = max(state.hand_sizes[my_idx], 1)
+
+        # Fraction of hand that is currently playable
+        vec.append(len(plays) / hand_size)
+
+        # Whether any wild is available (binary)
+        vec.append(1.0 if any(c.card_type == CardType.WILD for c in plays) else 0.0)
+
+        # Whether any WD4 is available (binary)
+        vec.append(
+            1.0 if any(c.card_type == CardType.WILD_DRAW_FOUR for c in plays) else 0.0
+        )
+
+        # Whether opponent is in threat range (<= 2 cards)
+        vec.append(1.0 if state.hand_sizes[opp_idx] <= 2 else 0.0)
+
+        assert len(vec) == _STATE_DIM, (
+            f"State vector length mismatch: got {len(vec)}, expected {_STATE_DIM}"
+        )
+        return vec
 
     def choose_action(self, state: GameState) -> Tuple[Card, Optional[Color]]:
         """Selecting a card via ε-greedy Q-value scoring.
@@ -216,14 +323,8 @@ class RLAgent(BaseAgent):
         return card, chosen_color
 
     def _greedy_card(self, state: GameState) -> Card:
-        """Scoring each valid card and returning the highest-Q selection.
-
-        Args:
-            state: Current game state snapshot.
-
-        Returning Card with the maximum predicted Q-value.
-        """
-        state_vec = encode_state(state)
+        """Scoring each valid card and returning the highest-Q selection."""
+        state_vec = self._encode_state(state)  # CHANGED
         state_t = torch.tensor(state_vec, dtype=torch.float32, device=self.device)
 
         self.online_net.eval()
@@ -267,30 +368,23 @@ class RLAgent(BaseAgent):
 
     # ── Training ──────────────────────────────────────────────────────────────
 
-    def train_step(self, batch: List[dict]) -> float:
+    def train_step(
+        self, batch: List[dict], weights: Optional[List[float]] = None
+    ) -> tuple:
         """Performing one DQN gradient update on a sampled batch.
 
-        Each element of batch is a dataset row produced by self_play.py:
-            {
-                "state"       : List[float],         # encode_state() output
-                "action_index": int,                 # index in valid_plays
-                "reward"      : float,               # terminal reward
-                "next_state"  : List[float] | None,  # None on terminal turn
-                "done"        : bool,
-            }
-
-        Note: action_index is not used directly here because the network
-        scores (state, card) pairs and the card vector is re-encoded from
-        the state at collection time.  Training/train_rl.py must store the
-        encoded card vector alongside each row (as "action_vec") if it
-        wants to avoid re-encoding.  If "action_vec" is absent, this
-        method falls back to zeroing the card part of the input, which is
-        a valid approximation for terminal states.
+        Updated to support prioritised experience replay by accepting
+        importance sampling weights and returning TD errors so the buffer
+        can update priorities after each step.
 
         Args:
-            batch: List of experience dicts sampled from the replay buffer.
+            batch:   List of experience dicts sampled from the replay buffer.
+            weights: Optional importance sampling weights from prioritised
+                    replay buffer, one per row. If None (uniform sampling),
+                    all weights are treated as 1.0.
 
-        Returning the scalar loss value for logging.
+        Returning (loss_value, td_errors) where td_errors is a list of
+        floats of length len(batch), used by the buffer to update priorities.
         """
         self.online_net.train()
 
@@ -312,23 +406,34 @@ class RLAgent(BaseAgent):
             device=self.device,
         )
 
+        # Importance sampling weights -- default to 1.0 if not provided
+        if weights is None:
+            weight_t = torch.ones(len(batch), dtype=torch.float32, device=self.device)
+        else:
+            weight_t = torch.tensor(weights, dtype=torch.float32, device=self.device)
+
         # Q(s, a) from online network
-        inputs = torch.cat([states, action_vecs], dim=1)  # (B, 50)
+        inputs = torch.cat([states, action_vecs], dim=1)  # (B, _INPUT_DIM)
         q_values = self.online_net(inputs).squeeze(1)  # (B,)
 
-        # Bellman target: r  +  γ · max_a' Q_target(s', a')  ·  (1 - done)
+        # Bellman target
         with torch.no_grad():
             next_q = self._next_state_values(batch)  # (B,)
             targets = rewards + self.gamma * next_q * (1.0 - dones)
 
-        loss = self.loss_fn(q_values, targets)
+        # TD errors for priority update (before weighting)
+        td_errors = (targets - q_values).detach().cpu().tolist()
+
+        # Weighted MSE loss -- importance weights correct for sampling bias
+        elementwise_loss = (q_values - targets) ** 2  # (B,)
+        loss = (weight_t * elementwise_loss).mean()
+
         self.optimiser.zero_grad()
         loss.backward()
-        # Gradient clipping for training stability
         nn.utils.clip_grad_norm_(self.online_net.parameters(), max_norm=1.0)
         self.optimiser.step()
 
-        return loss.item()
+        return loss.item(), td_errors
 
     def _next_state_values(self, batch: List[dict]) -> torch.Tensor:
         """Computing max target-network Q-value for each next state.

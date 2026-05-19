@@ -73,6 +73,7 @@ train_step() has direct access without re-encoding.
 
 import sys
 import os
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -86,15 +87,15 @@ from agents.random_agent import RandomAgent
 from agents.rule_agent import RuleAgent
 from agents.bad_rule_agent import RuleBadAgent
 from agents.rl_agent import RLAgent
-from training.feature_encoder import encode_state, encode_card
+from training.feature_encoder import encode_card
 from config import TrainingConfig, Paths
 
 # ── Hyperparameters ───────────────────────────────────────────────────────────
 
-NUM_EPISODES: int = 30_000
+NUM_EPISODES: int = 100_000
 BATCH_SIZE: int = TrainingConfig.BATCH_SIZE
-BUFFER_SIZE: int = 50_000
-TARGET_SYNC_EVERY: int = 500
+BUFFER_SIZE: int = 100_000
+TARGET_SYNC_EVERY: int = 200
 CHECKPOINT_EVERY: int = 5_000
 LOG_EVERY: int = 1_000
 
@@ -119,9 +120,60 @@ PRETRAINED_PATH: str = str(Paths.MODELS / "rl_agent_pretrained.pt")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+class PrioritisedReplayBuffer:
+    """Sampling experiences proportionally to their TD error magnitude.
+
+    Experiences with large prediction errors are sampled more often
+    because they represent situations the network has not yet learned.
+
+    Args:
+        maxlen:   Maximum buffer capacity.
+        alpha:    Priority exponent. 0 = uniform, 1 = full prioritisation.
+        beta:     Importance sampling exponent. Annealed toward 1.0.
+    """
+
+    def __init__(self, maxlen: int, alpha: float = 0.6, beta: float = 0.4):
+        """Initialising empty buffer."""
+        self.buffer = []
+        self.maxlen = maxlen
+        self.alpha = alpha
+        self.beta = beta
+        self.priorities = []
+
+    def push(self, row: dict) -> None:
+        """Adding experience with maximum current priority."""
+        max_p = max(self.priorities, default=1.0)
+        if len(self.buffer) >= self.maxlen:
+            self.buffer.pop(0)
+            self.priorities.pop(0)
+        self.buffer.append(row)
+        self.priorities.append(max_p)
+
+    def sample(self, batch_size: int):
+        """Sampling a batch weighted by priority.
+
+        Returning (batch, indices, weights) where weights correct for
+        the sampling bias introduced by prioritisation.
+        """
+        probs = np.array(self.priorities) ** self.alpha
+        probs /= probs.sum()
+        indices = np.random.choice(len(self.buffer), batch_size, p=probs, replace=False)
+        batch = [self.buffer[i] for i in indices]
+        total = len(self.buffer)
+        weights = (total * probs[indices]) ** (-self.beta)
+        weights /= weights.max()
+        return batch, indices, weights.tolist()
+
+    def update_priorities(self, indices, td_errors) -> None:
+        """Updating priorities after a train step."""
+        for idx, err in zip(indices, td_errors):
+            self.priorities[idx] = abs(err) + 1e-6  # small constant avoids zero
+
+    def __len__(self):
+        return len(self.buffer)
 
 
-def _pick_opponent(episode: int, phase2_start: int):
+def _pick_opponent(episode: int, phase2_start: int, agent: RLAgent):
     """Returning the appropriate opponent agent for the current episode.
 
     Args:
@@ -135,7 +187,14 @@ def _pick_opponent(episode: int, phase2_start: int):
         return RandomAgent("Random")
     if episode < PHASE3_START:
         return RuleBadAgent("RuleBad")
-    return RuleAgent("Rule")
+    # Phase 3: mix of RuleAgent and frozen self-play
+    if random.random() < 0.5:
+        return RuleAgent("Rule")
+    else:
+        frozen = RLAgent("RL-frozen", epsilon=0.0)
+        frozen.online_net.load_state_dict(agent.online_net.state_dict())
+        frozen.target_net.load_state_dict(agent.target_net.state_dict())
+        return frozen
 
 
 def _terminal_reward(winner: int, player: int) -> float:
@@ -170,19 +229,35 @@ def _intermediate_reward(result: TurnResult, pre_hand: int, post_hand: int) -> f
     """
     r = 0.0
     card = result.card_played
+    state = result.pre_state
+    opp_idx = 1 - state.current_player
+
     if card is None:
         return r
 
-    # Reward for playing aggressive action cards
+    opp_hand = state.hand_sizes[opp_idx]
+
+    # Reward for playing aggressive action cards, larger bonus if opponent is close to winning
+    threat = opp_hand <= 2  # opponent is close to winning
     if card.card_type == CardType.WILD_DRAW_FOUR:
-        r += 0.3
+        r += 0.5 if threat else 0.3
     elif card.card_type == CardType.DRAW_TWO:
-        r += 0.2
+        r += 0.4 if threat else 0.2
     elif card.card_type in (CardType.SKIP, CardType.REVERSE):
-        r += 0.1
+        r += 0.3 if threat else 0.1
+
+    # Penalise wasting a wild when a non-wild was available
+    non_wilds = [c for c in state.valid_plays if not c.is_wild()]
+    if card.is_wild() and len(non_wilds) > 0:
+        r -= 0.1
 
     # Reward for reducing hand size
-    r += 0.05 * (pre_hand - post_hand)
+    r += 0.2 * (pre_hand - post_hand)
+
+    # Small penalty for drawing (passed as card=None, already handled above,
+    # but penalise turns that result in a larger hand)
+    if post_hand > pre_hand:
+        r -= 0.05
 
     return r
 
@@ -197,10 +272,15 @@ def _collect_episode(
     Only turns where RLAgent (player 0) played a card are stored.
     Rows are returned with the terminal reward already backfilled.
 
+    Uses agent._encode_state() instead of the global encode_state() from
+    feature_encoder.py so that the richer 54-float state vector (which
+    includes valid_plays composition features) is used consistently for
+    both training and inference.
+
     Each row contains:
         "player"     : int
-        "state"      : List[float]
-        "action_vec" : List[float]   -- encode_card(card_played)
+        "state"      : List[float]   -- agent._encode_state() output (54 floats)
+        "action_vec" : List[float]   -- encode_card(card_played)     (21 floats)
         "reward"     : float         -- terminal + intermediate reward
         "next_state" : List[float] | None
         "done"       : bool
@@ -225,17 +305,22 @@ def _collect_episode(
         result: TurnResult = game.play_turn()
 
         if player == 0 and result.card_played is not None:
-            post_hand = game.get_state().hand_sizes[0]
+            post_state = game.get_state()
+            post_hand = post_state.hand_sizes[0]
             next_state_vec = (
-                encode_state(game.get_state()) if result.winner is None else None
+                agent._encode_state(post_state)  # CHANGED: was encode_state()
+                if result.winner is None
+                else None
             )
             inter_r = _intermediate_reward(result, pre_hand, post_hand)
             rows.append(
                 {
                     "player": player,
-                    "state": encode_state(pre_state),
+                    "state": agent._encode_state(
+                        pre_state
+                    ),  # CHANGED: was encode_state()
                     "action_vec": encode_card(result.card_played),
-                    "reward": inter_r,  # terminal reward added below
+                    "reward": inter_r,
                     "next_state": next_state_vec,
                     "done": result.winner is not None,
                 }
@@ -283,7 +368,7 @@ def train() -> None:
     eps_decay = (epsilon_start - EPSILON_END) / NUM_EPISODES
     agent.epsilon = epsilon_start
 
-    buffer: Deque[dict] = deque(maxlen=BUFFER_SIZE)
+    buffer = PrioritisedReplayBuffer(maxlen=BUFFER_SIZE)
     total_steps = 0
     wins = 0
     losses = 0
@@ -302,12 +387,13 @@ def train() -> None:
     print("=" * 55)
 
     for episode in range(NUM_EPISODES):
-        opponent = _pick_opponent(episode, phase2_start)
+        opponent = _pick_opponent(episode, phase2_start, agent)
         seed = episode
 
         winner, rows = _collect_episode(agent, opponent, seed)
 
-        buffer.extend(rows)
+        for row in rows:
+            buffer.push(row)
 
         if winner == 0:
             wins += 1
@@ -316,12 +402,13 @@ def train() -> None:
         else:
             losses += 1
 
+        # Replace the train step call
         if len(buffer) >= BATCH_SIZE:
-            batch = random.sample(buffer, BATCH_SIZE)
-            loss = agent.train_step(batch)
-            total_loss += loss
-            loss_updates += 1
-            total_steps += 1
+            batch, indices, weights = buffer.sample(BATCH_SIZE)
+            loss, td_errors = agent.train_step(
+                batch, weights
+            )  # CHANGED: now returns TD errors
+            buffer.update_priorities(indices, td_errors)
 
             if total_steps % TARGET_SYNC_EVERY == 0:
                 agent.sync_target_network()
