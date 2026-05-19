@@ -107,15 +107,18 @@ If an agent barely beats Random there is no point running it against stronger op
 | Matchup | Games | P0 Wins | P1 Wins | Draws | Avg Turns |
 |---|---:|---:|---:|---:|---:|
 | Random vs Random | 10,000 | 50.2% | 49.8% | 0 | 62.6 |
-| Rule vs Random | 10,000 | 56.4% | 43.6% | 0 | 60.2 |
-| Random vs Rule | 10,000 | 45.2% | 54.8% | 0 | 61.0 |
+| Rule vs Random | 10,000 | **56.4%** | 43.6% | 0 | 60.2 |
+| Random vs Rule | 10,000 | 45.2% | **54.8%** | 0 | 61.0 |
 | Rule vs Rule | 10,000 | 52.1% | 47.9% | 1 | 60.8 |
-| Rule Good vs Rule Bad | 10,000 | 59.1% | 40.9% | 0 | 59.2 |
-| Rule Bad vs Rule Good | 10,000 | 43.9% | 56.1% | 0 | 59.2 |
-| MCTS vs Random | 1,000 | **64.2%** | 35.8% | 0 | 48.1 |
-| Random vs MCTS | 1,000 | 36.0% | **64.0%** | 0 | 49.0 |
-| MCTS vs Rule | 1,000 | **59.9%** | 40.1% | 0 | 47.9 |
-| Rule vs MCTS | 1,000 | 42.3% | **57.7%** | 0 | 47.3 |
+| Rule Good vs Rule Bad | 10,000 | **59.1%** | 40.9% | 0 | 59.2 |
+| Rule Bad vs Rule Good | 10,000 | 43.9% | **56.1%** | 0 | 59.2 |
+| MCTS vs Random | 10,000 | **65%** | 35% | 0 | 49.1 |
+| MCTS vs Rule | 10,000 | **59.2%** | 40.8% | 0 | 47.7 |
+| MCTS vs RL | 10,000 | | | | |
+| Random vs MCTS | 10,000 | 42.7% | **57.3%** | 0 | 48.1 |
+| Rule vs MCTS | 10,000 | 42.7% | **57.3%** | 0 | 48.1 |
+| RL vs MCTS | 10,000 | 40.% | **60%** | 0 | 49.8 |
+
 
 *MCTS parameters: `num_simulations=200`, `c=1.0`, `rollout_depth=20`. Position-averaged win rates: 64.1% vs Random, 58.8% vs Rule.*
 
