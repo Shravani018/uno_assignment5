@@ -1,0 +1,377 @@
+[
+  {
+    "c": 0.7,
+    "depth": 10,
+    "num_simulations": 200,
+    "win_rate": 0.592,
+    "wins": [
+      296,
+      204
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.112,
+    "elapsed_s": 698.9,
+    "avg_decision_time_s": 0.0581
+  },
+  {
+    "c": 0.7,
+    "depth": 20,
+    "num_simulations": 200,
+    "win_rate": 0.534,
+    "wins": [
+      267,
+      233
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.438,
+    "elapsed_s": 701.1,
+    "avg_decision_time_s": 0.0591
+  },
+  {
+    "c": 0.7,
+    "depth": 30,
+    "num_simulations": 200,
+    "win_rate": 0.582,
+    "wins": [
+      291,
+      209
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.966,
+    "elapsed_s": 784.1,
+    "avg_decision_time_s": 0.0654
+  },
+  {
+    "c": 1.0,
+    "depth": 10,
+    "num_simulations": 200,
+    "win_rate": 0.574,
+    "wins": [
+      287,
+      213
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.182,
+    "elapsed_s": 762.2,
+    "avg_decision_time_s": 0.0633
+  },
+  {
+    "c": 1.0,
+    "depth": 20,
+    "num_simulations": 200,
+    "win_rate": 0.6,
+    "wins": [
+      300,
+      200
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.518,
+    "elapsed_s": 1141.0,
+    "avg_decision_time_s": 0.0941
+  },
+  {
+    "c": 1.0,
+    "depth": 30,
+    "num_simulations": 200,
+    "win_rate": 0.58,
+    "wins": [
+      290,
+      210
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 52.112,
+    "elapsed_s": 881.5,
+    "avg_decision_time_s": 0.0677
+  },
+  {
+    "c": 1.41,
+    "depth": 10,
+    "num_simulations": 200,
+    "win_rate": 0.566,
+    "wins": [
+      283,
+      217
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.412,
+    "elapsed_s": 656.4,
+    "avg_decision_time_s": 0.0542
+  },
+  {
+    "c": 1.41,
+    "depth": 20,
+    "num_simulations": 200,
+    "win_rate": 0.528,
+    "wins": [
+      264,
+      236
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.74,
+    "elapsed_s": 730.3,
+    "avg_decision_time_s": 0.0599
+  },
+  {
+    "c": 1.41,
+    "depth": 30,
+    "num_simulations": 200,
+    "win_rate": 0.6,
+    "wins": [
+      300,
+      200
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 50.648,
+    "elapsed_s": 781.1,
+    "avg_decision_time_s": 0.0617
+  },
+  {
+    "c": 2.0,
+    "depth": 10,
+    "num_simulations": 200,
+    "win_rate": 0.574,
+    "wins": [
+      287,
+      213
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.068,
+    "elapsed_s": 621.7,
+    "avg_decision_time_s": 0.0517
+  },
+  {
+    "c": 2.0,
+    "depth": 20,
+    "num_simulations": 200,
+    "win_rate": 0.58,
+    "wins": [
+      290,
+      210
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.64,
+    "elapsed_s": 771.4,
+    "avg_decision_time_s": 0.0648
+  },
+  {
+    "c": 2.0,
+    "depth": 30,
+    "num_simulations": 200,
+    "win_rate": 0.626,
+    "wins": [
+      313,
+      187
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.948,
+    "elapsed_s": 1041.8,
+    "avg_decision_time_s": 0.0851
+  },
+  {
+    "c": 0.7,
+    "depth": 40,
+    "num_simulations": 200,
+    "win_rate": 0.562,
+    "wins": [
+      281,
+      219
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.488,
+    "elapsed_s": 819.6,
+    "avg_decision_time_s": 0.069
+  },
+  {
+    "c": 0.7,
+    "depth": 50,
+    "num_simulations": 200,
+    "win_rate": 0.58,
+    "wins": [
+      290,
+      210
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 51.4,
+    "elapsed_s": 863.7,
+    "avg_decision_time_s": 0.0672
+  },
+  {
+    "c": 1.0,
+    "depth": 40,
+    "num_simulations": 200,
+    "win_rate": 0.556,
+    "wins": [
+      278,
+      222
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.772,
+    "elapsed_s": 759.7,
+    "avg_decision_time_s": 0.0623
+  },
+  {
+    "c": 1.0,
+    "depth": 50,
+    "num_simulations": 200,
+    "win_rate": 0.578,
+    "wins": [
+      289,
+      211
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 51.508,
+    "elapsed_s": 828.3,
+    "avg_decision_time_s": 0.0643
+  },
+  {
+    "c": 1.41,
+    "depth": 40,
+    "num_simulations": 200,
+    "win_rate": 0.55,
+    "wins": [
+      275,
+      225
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 49.416,
+    "elapsed_s": 762.8,
+    "avg_decision_time_s": 0.0617
+  },
+  {
+    "c": 1.41,
+    "depth": 50,
+    "num_simulations": 200,
+    "win_rate": 0.572,
+    "wins": [
+      286,
+      214
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.152,
+    "elapsed_s": 780.2,
+    "avg_decision_time_s": 0.0648
+  },
+  {
+    "c": 2.0,
+    "depth": 40,
+    "num_simulations": 200,
+    "win_rate": 0.594,
+    "wins": [
+      297,
+      203
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 49.002,
+    "elapsed_s": 859.6,
+    "avg_decision_time_s": 0.0702
+  },
+  {
+    "c": 2.0,
+    "depth": 50,
+    "num_simulations": 200,
+    "win_rate": 0.554,
+    "wins": [
+      277,
+      223
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 50.798,
+    "elapsed_s": 806.5,
+    "avg_decision_time_s": 0.0635
+  },
+  {
+    "c": 3.0,
+    "depth": 10,
+    "num_simulations": 200,
+    "win_rate": 0.566,
+    "wins": [
+      283,
+      217
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.014,
+    "elapsed_s": 585.7,
+    "avg_decision_time_s": 0.0498
+  },
+  {
+    "c": 3.0,
+    "depth": 20,
+    "num_simulations": 200,
+    "win_rate": 0.598,
+    "wins": [
+      299,
+      201
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.816,
+    "elapsed_s": 645.0,
+    "avg_decision_time_s": 0.054
+  },
+  {
+    "c": 3.0,
+    "depth": 30,
+    "num_simulations": 200,
+    "win_rate": 0.592,
+    "wins": [
+      296,
+      204
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 47.712,
+    "elapsed_s": 691.6,
+    "avg_decision_time_s": 0.058
+  },
+  {
+    "c": 3.0,
+    "depth": 40,
+    "num_simulations": 200,
+    "win_rate": 0.552,
+    "wins": [
+      276,
+      224
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 48.91,
+    "elapsed_s": 749.5,
+    "avg_decision_time_s": 0.0613
+  },
+  {
+    "c": 3.0,
+    "depth": 50,
+    "num_simulations": 200,
+    "win_rate": 0.576,
+    "wins": [
+      288,
+      212
+    ],
+    "draws": 0,
+    "total_games": 500,
+    "avg_turns": 49.894,
+    "elapsed_s": 797.0,
+    "avg_decision_time_s": 0.0639
+  }
+]

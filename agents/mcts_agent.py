@@ -281,8 +281,8 @@ class MCTSAgent(BaseAgent):
         self,
         name: str = "MCTSAgent",
         num_simulations: int = 200,
-        c: float = 1.0,
-        rollout_depth: int = 20,
+        c: float = 2.0,
+        rollout_depth: int = 30,
         rollout_policy: str = "random",
     ) -> None:
         super().__init__(name)

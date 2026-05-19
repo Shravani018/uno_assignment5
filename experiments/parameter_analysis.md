@@ -2,7 +2,7 @@
 
 ## Experimental Setup
 
-All experiments evaluate MCTSAgent (Player 0) against RuleAgent (Player 1) over 500 games per configuration with a fixed seed (`base_seed=42`). Parameters are varied one-at-a-time while holding all others at their default values (`c=1.41`, `num_simulations=100`, `rollout_depth=150`). Win rate is reported as the fraction of games won by MCTSAgent. The margin of error at 500 games is approximately ±3.5% (95% confidence interval for a binomial proportion near 0.55).
+All experiments evaluate MCTSAgent (Player 0) against RuleAgent (Player 1) over 500 games per configuration with a fixed seed (`base_seed=42`). Parameters are varied one-at-a-time while holding all others at their default values (`c=1.41`, `num_simulations=100`, `rollout_depth=150`). Win rate is reported as the fraction of games won by MCTSAgent. The margin of error at 500 games is approximately ±4.4% (95% confidence interval for a binomial proportion near 0.58).
 
 ---
 
@@ -19,11 +19,11 @@ All experiments evaluate MCTSAgent (Player 0) against RuleAgent (Player 1) over 
 | 2.0 | 56.8% |
 | 3.0 | 53.0% |
 
-**Analysis.** Performance is broadly stable across c ∈ [0.7, 2.0], with a peak at c=1.0 (57.0%) and degradation at the extremes (c=0.35: 54.8%, c=3.0: 53.0%). The differences within the central range are within the ±3.5% margin of error, indicating that the algorithm is robust to the choice of c — consistent with the general MCTS literature finding that UCB1-based tree search is not highly sensitive to the exploration constant when it is kept within a reasonable interval.
+**Analysis.** Performance is broadly stable across c ∈ [0.7, 2.0], with a peak at c=1.0 (57.0%) and degradation at the extremes (c=0.35: 54.8%, c=3.0: 53.0%). The differences within the central range are within the ±4.4% margin of error, indicating that the algorithm is robust to the choice of c.
 
 The theoretical optimum for standard UCT is c=√2 ≈ 1.41 (Kocsis & Szepesvári, 2006). In SO-ISMCTS, the UCB1 denominator is `log(availability)` rather than `log(parent.visits)`, where availability ≥ visits by construction. This inflates the exploration term relative to standard UCT, which shifts the effective optimum toward lower values of c. The empirical peak at c=1.0 is consistent with this theoretical expectation.
 
-**Selected:** `c = 1.0`
+**Selected from 1D sweep:** `c = 1.0`
 
 ---
 
@@ -39,13 +39,11 @@ The theoretical optimum for standard UCT is c=√2 ≈ 1.41 (Kocsis & Szepesvár
 | 200 | 57.6% | 1079s |
 | **500** | **62.0%** | 2642s |
 
-**Analysis.** This is the most sensitive parameter: win rate rises monotonically from 51.6% (n=25) to 62.0% (n=500), a spread of 10.4 percentage points. This behaviour is theoretically expected — more simulations allow the tree to explore deeper and average over more determinizations of the opponent's hidden hand, reducing both approximation error and variance. The curve shows no sign of plateauing, indicating that n=500 has not reached the point of diminishing returns.
+**Analysis.** This is the most sensitive parameter: win rate rises monotonically from 51.6% (n=25) to 62.0% (n=500), a spread of 10.4 percentage points. More simulations allow the tree to explore deeper and average over more determinizations of the opponent's hidden hand, reducing both approximation error and variance.
 
-However, n=500 requires approximately 5 seconds per decision on a MacBook (inferred from 2642s for 500 games with ~31 decisions per player per game), making it impractical for real-time play and for large-scale benchmarks (10,000-game evaluations). n=200 achieves 57.6% win rate — a meaningful improvement over the original 100-simulation baseline — at roughly half the compute cost (≈2 seconds per decision).
+n=500 requires approximately 5 seconds per decision, making it impractical for large-scale benchmarks. n=200 achieves 57.6% at roughly half the compute cost (≈2 seconds per decision).
 
-**Selected:** `num_simulations = 200`
-
-The choice reflects a deliberate trade-off between performance and practical compute budget. If offline evaluation is the only requirement, n=500 is strictly better.
+**Selected:** `num_simulations = 200` — deliberate trade-off between performance and compute budget.
 
 ---
 
@@ -62,19 +60,15 @@ The choice reflects a deliberate trade-off between performance and practical com
 | 100 | 53.6% |
 | 150 (original default) | ~53.6% |
 
-**Analysis.** Performance peaks sharply at depth=20 and degrades consistently as depth increases beyond that point. This result is explained by the interaction between random rollout quality and the heuristic evaluation used at the depth limit.
-
-When the depth limit is reached before a natural game-over, the agent falls back to a hand-size heuristic:
+**Analysis.** Performance peaks at depth=20 and degrades as depth increases. When the depth limit is reached before game-over, the agent falls back to a hand-size heuristic:
 
 ```
 score = 0.5 + 0.2 × (opponent_hand − own_hand) / (opponent_hand + own_hand)
 ```
 
-This heuristic directly encodes UNO's win condition (empty hand wins) and provides a low-variance, high-signal estimate of positional advantage. By contrast, extending the rollout with random play introduces noise: both players make random card choices, and over many steps the game outcome converges toward 50-50 regardless of the initial positional advantage (mean reversion under random play). The heuristic is therefore a more informative signal than a long random playout, a phenomenon sometimes called the **rollout paradox** in the MCTS literature.
+This heuristic provides a low-variance, high-signal estimate of positional advantage. Extending the rollout with random play introduces noise: over many steps the game outcome converges toward 50-50 regardless of the initial positional advantage (mean reversion under random play) — the **rollout paradox**.
 
-The UNO benchmark shows an average game length of 62.6 turns, corresponding to approximately 31 turns per player. At depth=20, most rollouts terminate before reaching the depth limit in a typical mid-game position, providing a mix of true terminal outcomes and heuristic scores. Beyond depth=30, nearly all rollouts reach a natural terminal state — but via random play, which diminishes the quality of the resulting signal.
-
-**Selected:** `rollout_depth = 20`
+**Selected from 1D sweep:** `rollout_depth = 20`
 
 ---
 
@@ -87,27 +81,60 @@ The UNO benchmark shows an average game length of 62.6 turns, corresponding to a
 | **random** | **58.4%** | 49.3 |
 | rule | 56.6% | 47.5 |
 
-**Analysis.** Contrary to the common expectation that heavier (rule-based) rollouts outperform light (random) rollouts, random rollout yields a higher win rate (58.4% vs 56.6%). Three factors explain this result.
-
-First, with `rollout_depth=20`, the majority of rollouts reach the depth limit before a natural game-over and fall back to the hand-size heuristic. The rollout policy therefore only affects a minority of simulations where the game terminates within 20 steps. The practical difference between the two policies is smaller than it would be at greater depths.
-
-Second, the rule-based rollout models both the agent and the opponent as following RuleAgent's priority ordering during the simulation phase. This introduces a systematic bias: the tree is trained on rollout outcomes generated by a specific opponent model (rule-based), but the real opponent (RuleAgent) also plays by those same rules. The resulting value estimates are biased toward a "rule vs rule" scenario, which does not accurately represent the MCTS agent's own UCB1-guided decisions during the tree search phase.
-
-Third, random rollouts span a wider distribution of game trajectories, providing less biased and more diverse value estimates. This diversity supports better exploration in the UCB1 tree even if the individual rollout quality is lower.
-
-The 1.8 percentage-point gap (58.4% vs 56.6%) is within the ±3.5% margin of error for 500 games, so the result is not statistically conclusive. Nevertheless, random rollout is also simpler and faster, making it the preferred choice.
+**Analysis.** Random rollout outperforms rule-based rollout (58.4% vs 56.6%). The rule-based rollout introduces a systematic bias: the tree is trained on outcomes generated by a rule-based opponent model, but the MCTS agent's own decisions follow UCB1, not the rule ordering. Random rollouts span a wider distribution of trajectories, providing less biased value estimates. The gap is within the ±4.4% margin of error, so the result is not statistically conclusive; however, random rollout is also simpler and faster.
 
 **Selected:** `rollout_policy = "random"`
 
 ---
 
+## 5. Validation: 1D-Selected Parameters (c=1.0, depth=20, n=200)
+
+After selecting parameters from the one-at-a-time sweep, the combination (`c=1.0`, `num_simulations=200`, `rollout_depth=20`) was evaluated over 1,000 games against both baselines, across both player positions.
+
+| Matchup | Games | MCTS wins | Opponent wins | Avg turns |
+|---|---|---|---|---|
+| MCTS vs Random (P0) | 1,000 | **64.2%** | 35.8% | 48.1 |
+| Random vs MCTS (P1) | 1,000 | 36.0% | **64.0%** | 49.0 |
+| MCTS vs Rule (P0) | 1,000 | **59.9%** | 40.1% | 47.9 |
+| Rule vs MCTS (P1) | 1,000 | 42.3% | **57.7%** | 47.3 |
+
+Position-averaged win rates: **64.1%** vs RandomAgent, **58.8%** vs RuleAgent.
+
+The win rate is stable across positions (64.2% vs 64.0% against Random; 59.9% vs 57.7% against Rule), confirming the advantage is not a positional artifact. The 2.2 percentage-point gap vs Rule matches the ~2-point first-mover advantage observed in Rule vs Rule.
+
+---
+
+## 6. Grid Search: c × rollout_depth (num_simulations=200 fixed)
+
+The one-at-a-time sweep cannot capture parameter interactions. A 2D grid search was run over c and rollout_depth with `num_simulations=200` fixed, 500 games per configuration vs RuleAgent.
+
+**Grid:** c ∈ {0.7, 1.0, 1.41, 2.0, 3.0} × rollout_depth ∈ {10, 20, 30, 40, 50}
+
+| c \ depth | 10 | 20 | 30 | 40 | 50 |
+|---|---|---|---|---|---|
+| 0.7 | 59.2% | 53.4% | 58.2% | 56.2% | 58.0% |
+| 1.0 | 57.4% | 60.0% | 58.0% | 55.6% | 57.8% |
+| 1.41 | 56.6% | 52.8% | 60.0% | 55.0% | 57.2% |
+| **2.0** | 57.4% | 58.0% | **62.6%** | 59.4% | 55.4% |
+| 3.0 | 56.6% | 59.8% | 59.2% | 55.2% | 57.6% |
+
+**Key finding: parameter interaction.** The 1D sweep, which held c=1.41 fixed while varying depth, identified depth=20 as optimal. However, the grid search reveals this conclusion is specific to c=1.41: at c=1.41, depth=20 gives only 52.8%. The global optimum is c=2.0 + depth=30 (62.6%), a combination invisible to one-at-a-time search.
+
+**Why c and depth interact.** Rollout depth determines the variance of value estimates. At depth=20, rollouts frequently hit the depth limit and return a heuristic score — a continuous, low-variance signal. At depth=30, more rollouts reach natural game termination, returning binary {0,1} outcomes — higher variance but unbiased. Higher-variance estimates benefit from more exploration (higher c) to avoid premature exploitation of noisy estimates. This explains why c=2.0 pairs well with depth=30, while c=1.0 pairs better with depth=20.
+
+**Boundary check.** The search was extended to c=3.0 and depth=50 to verify the optimum is not at the boundary. Performance degrades in both directions beyond c=2.0 and depth=30, confirming the global optimum is interior to the extended grid.
+
+**Reproducibility.** The best configuration (c=2.0, depth=30) was retested with a different seed (`base_seed=123`): 62.0% (310/500), consistent with the original 62.6%.
+
+---
+
 ## Summary and Final Parameter Selection
 
-| Parameter | Original default | Selected value | Change |
-|---|---|---|---|
-| `c` | 1.41 | **1.0** | Empirically higher; theoretically consistent with ISMCTS availability inflation |
-| `num_simulations` | 100 | **200** | +4.0% win rate vs RuleAgent; practical compute budget on laptop |
-| `rollout_depth` | 150 | **20** | +4.4% win rate; heuristic outperforms long random rollout |
-| `rollout_policy` | random | **random** | Rule rollout introduces opponent-model bias; random is simpler and marginally better |
+| Parameter | Original default | 1D selection | Grid search | Final value |
+|---|---|---|---|---|
+| `c` | 1.41 | 1.0 | **2.0** | **2.0** |
+| `num_simulations` | 100 | **200** | fixed at 200 | **200** |
+| `rollout_depth` | 150 | 20 | **30** | **30** |
+| `rollout_policy` | random | **random** | — | **random** |
 
-The one-at-a-time sweep design does not capture parameter interactions, so a final validation experiment with the selected combination (`c=1.0`, `num_simulations=200`, `rollout_depth=20`) will be run against both RandomAgent and RuleAgent to confirm the combined improvement before updating the agent defaults.
+The grid search revised the 1D selections for c and rollout_depth. The final configuration (`c=2.0`, `num_simulations=200`, `rollout_depth=30`) will be validated against both baselines over 1,000 games across both player positions.

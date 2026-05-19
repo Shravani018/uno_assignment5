@@ -27,8 +27,8 @@ NUM_GAMES   = 500
 BASE_SEED   = 42
 FIXED_SIMS  = 200
 
-C_VALUES     = [0.7, 1.0, 1.41, 2.0]
-DEPTH_VALUES = [10, 20, 30]
+C_VALUES     = [0.7, 1.0, 1.41, 2.0, 3.0]
+DEPTH_VALUES = [10, 20, 30, 40, 50]
 
 
 def run_config(c: float, depth: int) -> dict:
