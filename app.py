@@ -189,7 +189,6 @@ def _card_html(card: Card, playable: bool = False, override_color: Color | None 
     txt = COLOR_TEXT[c]
     lbl = _lbl(card)
     bdr = "rgba(0,0,0,.4)" if c == Color.YELLOW else "rgba(255,255,255,.45)"
-    # cls = "uno-card" + (" card-playable" if playable else " card-dimmed")
     cls = "uno-card" + (" card-playable" if playable else "")
     return (
         f'<div class="{cls}" style="background:{bg};color:{txt};border-color:{bdr};">'
@@ -207,11 +206,13 @@ def _init_game(ai_name: str, ai_cls) -> None:
     human_hand = Hand([deck.draw() for _ in range(7)])
     ai_hand    = Hand([deck.draw() for _ in range(7)])
     deck.setup_first_card()
+    # Capping MCTS simulations to 50 to keep per-turn latency under ~1 s
+    ai_agent = ai_cls(ai_name, num_simulations=50) if ai_cls.__name__ == "MCTSAgent" else ai_cls(ai_name)
     st.session_state.update(
         page="game",
         human_name="You",
         ai_name=ai_name,
-        ai_agent=ai_cls(ai_name),
+        ai_agent=ai_agent,
         deck=deck,
         human_hand=human_hand,
         ai_hand=ai_hand,
@@ -222,6 +223,8 @@ def _init_game(ai_name: str, ai_cls) -> None:
         winner=None,
         pending_wild=None,
         drawn_this_turn=False,
+        # Explicit flag preventing re-entry into _ai_turn on spurious reruns
+        ai_turn_pending=False,
     )
 
 
@@ -251,9 +254,10 @@ def _execute_human_play(card: Card, chosen_color: Color | None) -> None:
         s.human_turn = True
         return
 
-    s.human_turn = False
-    s.turn_count += 1
-    _ai_turn()
+    # Setting flag so _page_game fires _ai_turn after spinner renders
+    s.human_turn       = False
+    s.turn_count      += 1
+    s.ai_turn_pending  = True
 
 
 def _ai_turn() -> None:
@@ -263,12 +267,13 @@ def _ai_turn() -> None:
     if not valid:
         s.ai_hand.add(s.deck.draw())
         s.game_log.append(f"🤖 {s.ai_name} drew a card")
-        s.human_turn     = True
-        s.turn_count    += 1
+        s.human_turn      = True
+        s.turn_count     += 1
         s.drawn_this_turn = False
         return
 
     from core.game import GameState
+    # Passing my_full_hand so MCTSAgent determinizes correctly against the actual hand
     state = GameState(
         current_player=1,
         top_card=s.deck.top_card(),
@@ -276,8 +281,13 @@ def _ai_turn() -> None:
         hand_sizes=[s.human_hand.size(), s.ai_hand.size()],
         draw_pile_size=s.deck.draw_pile_size,
         valid_plays=valid,
+        my_full_hand=list(s.ai_hand.cards),
     )
     card, chosen_color = s.ai_agent.choose_action(state)
+    # Guarding against MCTS returning a card not in hand (e.g. wrong determinization)
+    if card not in s.ai_hand.cards:
+        card = valid[0]
+        chosen_color = None if not card.is_wild() else chosen_color
     s.ai_hand.remove(card)
     s.deck.discard(card)
     effect = apply_card_effect(card, chosen_color)
@@ -300,9 +310,11 @@ def _ai_turn() -> None:
         _ai_turn()
         return
 
-    s.human_turn     = True
-    s.turn_count    += 1
+    s.human_turn      = True
+    s.turn_count     += 1
     s.drawn_this_turn = False
+
+
 
 def _page_setup() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
@@ -315,18 +327,27 @@ def _page_setup() -> None:
     )
     _, col, _ = st.columns([1, 2, 1])
     with col:
-        st.markdown('<div class="uno-panel" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 16px;margin-bottom:8px;">', unsafe_allow_html=True)
-        st.markdown('<div style="font-family:Nunito,sans-serif;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.45);margin-bottom:6px;">Choose your opponent</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div style="font-family:Nunito,sans-serif;font-weight:800;font-size:11px;'
+            'text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.45);'
+            'margin-bottom:6px;">Choose your opponent</div>',
+            unsafe_allow_html=True,
+        )
         ai_choice = st.selectbox("", list(AGENT_MAP.keys()), label_visibility="collapsed")
-        st.markdown("</div>", unsafe_allow_html=True)
         if st.button("🃏  DEAL CARDS", use_container_width=True, type="primary"):
             _init_game(ai_choice, AGENT_MAP[ai_choice])
             st.rerun()
 
-
 def _page_game() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     s = st.session_state
+
+    # Firing AI turn only when explicitly flagged — prevents re-entry on spurious reruns
+    if s.get("ai_turn_pending") and not s.winner:
+        s.ai_turn_pending = False
+        with st.spinner(f"🤖 {s.ai_name} is thinking…"):
+            _ai_turn()
+        st.rerun()
 
     deck:       Deck = s.deck
     human_hand: Hand = s.human_hand
@@ -334,6 +355,7 @@ def _page_game() -> None:
     top_card         = deck.top_card()
     cur_color        = s.current_color
     valid_cards      = _get_valid(human_hand, deck, cur_color) if s.human_turn else []
+
     if s.winner:
         human_won = s.winner == "human"
         st.markdown(
@@ -362,17 +384,16 @@ def _page_game() -> None:
     # AI hand on the left, human hand on the right, everything else in the center
     left_col, center_col, right_col = st.columns([3, 2, 3])
 
-    # Left panel: AI hand (card backs only, with count) + name + thinking indicator
+    # Left panel: AI hand (card backs only, with count) + name
     with left_col:
         ai_active = not s.human_turn
         badge_cls = "side-panel-badge active" if ai_active else "side-panel-badge"
-        thinking  = ' ●●●' if ai_active else ""
         show_n = min(ai_hand.size(), 20)
         backs  = "".join('<div class="card-back-sm">UNO</div>' for _ in range(show_n))
         overflow = f'<div style="font-size:11px;color:rgba(255,255,255,.4);padding:4px">+{ai_hand.size()-20} more</div>' if ai_hand.size() > 20 else ""
         st.markdown(
             f'<div class="side-panel">'
-            f'<div class="side-panel-label">🤖 {s.ai_name}{thinking}</div>'
+            f'<div class="side-panel-label">🤖 {s.ai_name}</div>'
             f'<div style="text-align:center;margin-bottom:6px"><span class="{badge_cls}">{ai_hand.size()} cards</span></div>'
             f'<div class="h-card-wrap">{backs}{overflow}</div>'
             f'</div>',
@@ -381,7 +402,6 @@ def _page_game() -> None:
 
     # Pile, Status and Controls in the center
     with center_col:
-        # Status strip
         if s.pending_wild:
             msg = "Wild! Pick a colour ↓"
         elif s.human_turn:
@@ -427,27 +447,22 @@ def _page_game() -> None:
         top_html = _card_html(top_card, playable=False, override_color=discard_override)
         st.markdown(
     f'<div style="display:flex;justify-content:center;align-items:center;gap:52px;padding:18px 0 8px;">'
-
-    # Draw pile (smaller + dimmer)
     f'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.55;transform:scale(.9);">'
     f'  <span class="pile-title">Draw Pile</span>'
     f'  <div class="draw-pile-vis" style="transform:scale(.92);">UNO</div>'
     f'  <span class="pile-count">{deck.draw_pile_size} cards</span>'
     f'</div>'
-
-    # Main active card (larger + glowing)
     f'<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">'
     f'  <span class="pile-title" style="color:#FFD600;font-size:13px;">Card In Play</span>'
     f'  <div style="transform:scale(1.32);filter:drop-shadow(0 0 24px rgba(255,214,0,.55));">'
     f'    {top_html}'
     f'  </div>'
     f'</div>'
-
     f'</div>',
     unsafe_allow_html=True,
 )
 
-        # Draw Card button
+        # Draw Card button — AI turn is now handled at top of _page_game, not here
         draw_disabled = not s.human_turn or bool(s.drawn_this_turn) or bool(s.pending_wild)
         _, draw_btn_col, _ = st.columns([1, 2, 1])
         with draw_btn_col:
@@ -462,10 +477,11 @@ def _page_game() -> None:
                 s.drawn_this_turn = True
                 s.game_log.append("✋ You drew a card")
                 if not _get_valid(human_hand, deck, cur_color):
+                    # Deferring AI turn to next rerun so spinner renders first
                     s.human_turn      = False
                     s.turn_count     += 1
                     s.drawn_this_turn = False
-                    _ai_turn()
+                    s.ai_turn_pending = True
                 st.rerun()
 
         # Recent log
@@ -484,7 +500,8 @@ def _page_game() -> None:
         with st.expander("📜 Full Log", expanded=False):
             for e in reversed(s.game_log[-60:]):
                 st.markdown(f'<div class="log-entry">{e}</div>', unsafe_allow_html=True)
-    # Right panel: Human hand (with playable cards highlighted) + name + active indicator + play buttons
+
+    # Right panel: Human hand with playable cards highlighted
     with right_col:
         h_active  = s.human_turn
         badge_cls = "side-panel-badge active" if h_active else "side-panel-badge"
@@ -493,7 +510,6 @@ def _page_game() -> None:
         cards = human_hand.cards
         playable_flags = [h_active and c in valid_cards and not s.pending_wild for c in cards]
 
-        # Render all cards as one HTML block (horizontal wrap)
         cards_html = "".join(
             _card_html(c, playable=playable_flags[i]) for i, c in enumerate(cards)
         )
@@ -506,8 +522,6 @@ def _page_game() -> None:
             unsafe_allow_html=True,
         )
 
-        # Play buttons rendered below the panel using st.columns
-        # Only show buttons for playable cards
         playable_indices = [i for i, p in enumerate(playable_flags) if p]
         if playable_indices:
             st.markdown(
@@ -516,7 +530,6 @@ def _page_game() -> None:
                 'margin:6px 0 3px;text-align:center;">Tap to play</div>',
                 unsafe_allow_html=True,
             )
-            # Show up to 8 play buttons per row, with color dot
             COLOR_EMOJI = {
                 Color.RED:    "🔴",
                 Color.GREEN:  "🟢",
