@@ -223,6 +223,6 @@ data/logs/
 data/
 models/
 logs/
-*.pt
+
 *.jsonl
 .claude/
