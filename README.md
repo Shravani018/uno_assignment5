@@ -75,6 +75,17 @@ python -m unittest discover tests/ -v
 
 ```
 
+**Project Structure**
+
+```text
+agents/             Agent implementations
+core/               UNO engine and game logic
+data/               Models, logs, datasets
+tests/              Unit tests
+app.py              Streamlit UI
+matchups.py         Tournament runner
+```
+
 ---
 
 **References**
