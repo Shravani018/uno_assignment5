@@ -122,18 +122,6 @@ If an agent barely beats Random there is no point running it against stronger op
 | RL vs MCTS | 10,000 | 40% | **60%** | 0 | 49.8 |
 
 
-*MCTS parameters: `num_simulations=200`, `c=1.0`, `rollout_depth=20`. Position-averaged win rates: 64.1% vs Random, 58.8% vs Rule.*
-
-**MCTS Parameter Tuning**
-
-A one-at-a-time sensitivity analysis was run over three key SO-ISMCTS hyperparameters (500 games per configuration vs RuleAgent). Results are summarised in `experiments/results/mcts_param_sweep.png` and detailed in `experiments/parameter_analysis.md`.
-
-| Parameter | Default | Tuned | Key finding |
-|---|---|---|---|
-| `c` | 1.41 | **1.0** | Performance robust across c ∈ [0.7, 2.0]; lower optimum consistent with ISMCTS availability inflation |
-| `num_simulations` | 100 | **200** | Most sensitive parameter; monotonic gain from 51.6% (n=25) to 62.0% (n=500); n=200 chosen as compute budget |
-| `rollout_depth` | 150 | **20** | Short rollout + hand-size heuristic outperforms long random playout; peak at depth=20 |
-| `rollout_policy` | random | **random** | Rule-based rollout (56.6%) marginally worse than random (58.4%); difference within noise |
 
 **Verdict**
 
