@@ -1,4 +1,4 @@
-## 🃏 [UNO Agent Benchmark](https://your-app-name.streamlit.app/)
+## 🃏 [UNO Agent Benchmark](https://uno-matchup.streamlit.app/)
 
 
 A 2-player UNO engine for comparing agent strategies: rule-based, tree search (MCTS), and deep reinforcement learning. 
