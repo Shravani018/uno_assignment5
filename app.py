@@ -266,7 +266,7 @@ def _ai_turn() -> None:
 
     if not valid:
         s.ai_hand.add(s.deck.draw())
-        s.game_log.append(f"🤖 {s.ai_name} drew a card")
+        s.game_log.append(f" {s.ai_name} drew a card")
         s.human_turn      = True
         s.turn_count     += 1
         s.drawn_this_turn = False
@@ -293,7 +293,7 @@ def _ai_turn() -> None:
     effect = apply_card_effect(card, chosen_color)
     s.current_color = effect["new_color"]
     note = f" → chose {chosen_color.value}" if chosen_color else ""
-    s.game_log.append(f"🤖 {s.ai_name} played {card.color.value} {_lbl(card)}{note}")
+    s.game_log.append(f" {s.ai_name} played {card.color.value} {_lbl(card)}{note}")
 
     if s.ai_hand.is_empty():
         s.winner = "ai"
@@ -345,7 +345,7 @@ def _page_game() -> None:
     # Firing AI turn only when explicitly flagged — prevents re-entry on spurious reruns
     if s.get("ai_turn_pending") and not s.winner:
         s.ai_turn_pending = False
-        with st.spinner(f"🤖 {s.ai_name} is thinking…"):
+        with st.spinner(f"{s.ai_name} is thinking…"):
             _ai_turn()
         st.rerun()
 
@@ -393,7 +393,7 @@ def _page_game() -> None:
         overflow = f'<div style="font-size:11px;color:rgba(255,255,255,.4);padding:4px">+{ai_hand.size()-20} more</div>' if ai_hand.size() > 20 else ""
         st.markdown(
             f'<div class="side-panel">'
-            f'<div class="side-panel-label">🤖 {s.ai_name}</div>'
+            f'<div class="side-panel-label">{s.ai_name}</div>'
             f'<div style="text-align:center;margin-bottom:6px"><span class="{badge_cls}">{ai_hand.size()} cards</span></div>'
             f'<div class="h-card-wrap">{backs}{overflow}</div>'
             f'</div>',
