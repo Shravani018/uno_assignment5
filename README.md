@@ -16,10 +16,29 @@ A 2-player UNO engine for comparing agent strategies: rule-based, tree search (M
 | **MCTS Agent** | Information Set MCTS (SO-ISMCTS, Cowling et al. 2012). Re-samples the opponent hand each iteration. UCB1 uses an `availability` count as the denominator rather than parent visits. |
 
 ---
+**Final Rankings**
 
-**Benchmark Results (10,000 games each)**
+| Rank | Agent              | Summary                                                               |
+| ---- | ------------------ | --------------------------------------------------------------------- |
+| 🥇 1 | MCTS Agent        | Dominates every agent with the highest win margins and shortest games |
+| 🥈 2 | Rule Agent      | Strong consistent heuristic player; beats RL, Random, and Anti-Rule   |
+| 🥉 3 | RL Bot          | Better than Random overall, but still weaker than Rule and MCTS       |
+| 4    | Random Agent      | Surprisingly competitive against Anti-Rule                            |
+| 5    | Anti-Rule Agent | Intentionally poor strategy; weakest overall                     |
 
-| Matchup | Games | P0 Wins | P1 Wins | Draws | Avg Turns | Diff | Winner |
+**Insights**
+
+- MCTS Agent emerged as the strongest overall agent, consistently outperforming every other strategy with the highest win rates and shortest average game lengths, suggesting more decisive and efficient play.
+- The Rule Agent proved surprisingly competitive, outperforming the RL agent and serving as a strong handcrafted baseline against all opponents.
+- The RL Agent successfully learned strategies better than random play, but still struggled against stronger heuristic and search-based methods.
+- Random Agent beats Anti-Rule Agent outright in both player-order configurations (53.7% and 51.6%), confirming that intentionally poor strategy performs worse than pure chance.
+- No significant player-order advantage was observed, suggesting the UNO environment remains fairly balanced despite stochastic card draws and random game dynamics.
+  
+---
+
+**Matchup Results (10,000 games each)**
+
+| Match | Games | P0 Wins | P1 Wins | Draws | Avg Turns | Diff | Winner |
 |---|---:|---:|---:|---:|---:|---:|:---:|
 | Random vs Random | 10,000 | 50.2% | 49.8% | 0 | 62.6 | 0.4% | Draw |
 | Rule Agent vs Rule Agent | 10,000 | 52.1% | 47.9% | 1 | 60.8 | 4.2% | Draw |
