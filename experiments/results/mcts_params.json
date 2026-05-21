@@ -195,6 +195,18 @@
       "draws": 0,
       "total_games": 500,
       "avg_turns": 53.3
+    },
+    {
+      "param": "rollout_depth",
+      "value": 150,
+      "win_rate": 0.536,
+      "wins": [
+        268,
+        232
+      ],
+      "draws": 0,
+      "total_games": 500,
+      "avg_turns": 51.9
     }
   ],
   "rollout_policy": [

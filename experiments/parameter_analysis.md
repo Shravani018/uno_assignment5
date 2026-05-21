@@ -137,4 +137,19 @@ The one-at-a-time sweep cannot capture parameter interactions. A 2D grid search 
 | `rollout_depth` | 150 | 20 | **30** | **30** |
 | `rollout_policy` | random | **random** | — | **random** |
 
-The grid search revised the 1D selections for c and rollout_depth. The final configuration (`c=2.0`, `num_simulations=200`, `rollout_depth=30`) will be validated against both baselines over 1,000 games across both player positions.
+The grid search revised the 1D selections for c and rollout_depth. The final configuration (`c=2.0`, `num_simulations=200`, `rollout_depth=30`) was validated against both baselines over 1,000 games across both player positions.
+
+---
+
+## 7. Final Validation: Grid-Selected Parameters (c=2.0, depth=30, n=200)
+
+| Matchup | Games | MCTS wins | Opponent wins | Avg turns |
+|---|---|---|---|---|
+| MCTS vs Random (P0) | 1,000 | **63.6%** | 36.4% | 49.2 |
+| Random vs MCTS (P1) | 1,000 | 37.1% | **62.9%** | 49.4 |
+| MCTS vs Rule (P0) | 1,000 | **60.9%** | 39.1% | 49.5 |
+| Rule vs MCTS (P1) | 1,000 | 41.3% | **58.7%** | 47.5 |
+
+Position-averaged win rates: **63.3%** vs RandomAgent, **59.8%** vs RuleAgent.
+
+Compared to the 1D-selected parameters (c=1.0, depth=20): win rate vs Rule improved from 58.8% to 59.8% (+1.0pp), while win rate vs Random was marginally lower (64.1% → 63.3%, −0.8pp). Both differences are within the ±3.2% margin of error for 1,000 games, so neither change is statistically conclusive in isolation. The grid search was conducted vs RuleAgent, which explains why the improvement is more pronounced against Rule. The final parameters are retained as they represent the jointly-optimal configuration confirmed across multiple seeds.

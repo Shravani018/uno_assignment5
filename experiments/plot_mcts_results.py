@@ -90,15 +90,15 @@ def plot_num_simulations(rows: list):
 
 
 def plot_rollout_depth(rows: list):
-    baseline = next(r for r in rows if r["value"] == 100)
+    baseline = next(r for r in rows if r["value"] == 150)
 
     xs = [r["value"] for r in rows]
     ys = [r["win_rate"] * 100 for r in rows]
 
     fig, ax = plt.subplots(figsize=FIGSIZE)
     ax.plot(xs, ys, "o-", color="#FF9800", linewidth=2, markersize=7, label="Win rate")
-    ax.scatter([100], [baseline["win_rate"] * 100], s=120, color=BASELINE_COLOR,
-               zorder=5, label="Baseline (depth=100)")
+    ax.scatter([150], [baseline["win_rate"] * 100], s=120, color=BASELINE_COLOR,
+               zorder=5, label="Default (depth=150)")
     ax.axvline(x=31, color="gray", linestyle="--", linewidth=1, alpha=0.8,
                label="Avg steps/player ≈ 31")
 
