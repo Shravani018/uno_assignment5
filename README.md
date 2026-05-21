@@ -79,7 +79,9 @@ python -m unittest discover tests/ -v
 
 **References**
 
-- Cowling, P. I., Powley, E. J., & Whitehouse, D. (2012). Information Set Monte Carlo Tree Search. *IEEE TCIAIG*, 4(2), 120–143.
-- Kocsis, L., & Szepesvári, C. (2006). Bandit Based Monte-Carlo Planning. *ECML 2006*, LNCS 4212, pp. 282–293.
+- [Cowling, P. I., Powley, E. J., & Whitehouse, D. (2012). Information Set Monte Carlo Tree Search. *IEEE TCIAIG*, 4(2), 120–143.](https://www.researchgate.net/publication/254060888_Information_Set_Monte_Carlo_Tree_Search)
+- [Kocsis, L., & Szepesvári, C. (2006). Bandit Based Monte-Carlo Planning. *ECML 2006*, LNCS 4212, pp. 282–293.](https://www.researchgate.net/publication/221112399_Bandit_Based_Monte-Carlo_Planning)
+- [Demaine, E. D., Demaine, M. L., Uehara, R., Uno, T., & Uno, Y. (2014). UNO is hard, even for a single player. *Theoretical Computer Science*, 521, 51–61.](https://www.sciencedirect.com/science/article/pii/S0304397513008670)
 - [Rules](https://www.unorules.com/​)
 - [Strategies](https://www.unorules.com/best-strategies-to-win-uno/)
+  
