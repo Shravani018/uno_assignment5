@@ -257,7 +257,10 @@ def compute_ranking(df):
     Returns:
         DataFrame with columns Rank, Agent, AvgWinRate sorted descending.
     """
-    standard = df[df["Category"] == "standard"].copy()
+    standard = df[
+        (df["Category"] == "standard") &
+        (df["Matchup"] != "Random vs Random")
+        ].copy()
     agent_wins  = {}
     agent_games = {}
 
