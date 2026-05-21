@@ -21,7 +21,7 @@ AGENT_MAP = {
     "🎲 Random Bot":                 RandomAgent,
     "🧠 Greedy-Heuristic Bot":      RuleAgent,
     "🪤 Anti-Greedy Bot":           RuleBadAgent,
-    "🤖 Reinforcement Learning Bot": RLAgent,
+    "🕹️ Reinforcement Learning Bot": RLAgent,
     "👑 MCTS Bot":                  MCTSAgent,
 }
 
