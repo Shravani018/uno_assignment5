@@ -1,6 +1,6 @@
 """
 UNO Game Streamlit app.
-Player 1 = Human (always). Player 2 = chosen AI agent.
+Player 1 = Human (always). Player 2 = chosen any agent.
 """
 
 import sys
@@ -18,11 +18,11 @@ from agents.bad_rule_agent import RuleBadAgent
 from agents.rl_agent import RLAgent
 
 AGENT_MAP = {
-    "Random Bot":       RandomAgent,
-    "Greedy Bot":       RuleAgent,
-    "Anti-Greedy Bot":  RuleBadAgent,
-    "RL Bot":           RLAgent,
-    "MCTS Bot":         MCTSAgent,
+    "🎲 Random Bot":                 RandomAgent,
+    "🧠 Greedy-Heuristic Bot":      RuleAgent,
+    "🪤 Anti-Greedy Bot":           RuleBadAgent,
+    "🤖 Reinforcement Learning Bot": RLAgent,
+    "👑 MCTS Bot":                  MCTSAgent,
 }
 
 COLOR_HEX = {
