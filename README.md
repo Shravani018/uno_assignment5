@@ -32,8 +32,7 @@ A 2-player UNO engine for comparing agent strategies: rule-based, tree search (M
 - The Rule Agent proved surprisingly competitive, outperforming the RL agent and serving as a strong handcrafted baseline against all opponents.
 - The RL Agent successfully learned strategies better than random play, but still struggled against stronger heuristic and search-based methods.
 - Random Agent beats Anti-Rule Agent outright in both player-order configurations (53.7% and 51.6%), confirming that intentionally poor strategy performs worse than pure chance.
-- No significant player-order advantage was observed, suggesting the UNO environment remains fairly balanced despite stochastic card draws and random game dynamics.
-  
+    
 ---
 
 **Matchup Results (10,000 games each)**
@@ -85,6 +84,27 @@ tests/              Unit tests
 app.py              Streamlit UI
 matchups.py         Tournament runner
 ```
+
+---
+
+**Limitations**
+
+- The current system only supports 2-player UNO, limiting multiplayer strategy complexity.
+- The RL agent uses a relatively simple DQN architecture, which restricts long-term strategic learning.
+- The MCTS agent achieves the best performance but requires significantly higher computation time.
+- Hidden information is approximated through sampling, so opponent behavior cannot be modeled perfectly.
+- Evaluation mainly focuses on win rates and average turns rather than broader strategic metrics.
+
+---
+
+**Future Scope**
+
+- Extend the environment to support full multiplayer UNO gameplay.
+- Improve the RL agent using advanced methods such as PPO, Double DQN, or Transformer-based models.
+- Combine MCTS with neural networks to create stronger hybrid agents.
+- Add opponent modeling so agents can adapt to different play styles.
+- Expand benchmarking with Elo ratings, statistical testing, and richer evaluation metrics.
+
 
 ---
 
