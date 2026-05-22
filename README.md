@@ -64,7 +64,7 @@ A 2-player UNO engine for comparing agent strategies: rule-based, tree search (M
 ```bash
 
 # Run matchups 
-python main.py
+python matchups.py
 
 # Launch Streamlit UI (Human vs any agent)
 streamlit run app.py
