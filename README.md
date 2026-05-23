@@ -64,6 +64,7 @@ A 2-player UNO engine for comparing agent strategies: rule-based, tree search (M
 ```bash
 # Train the RL model first (required before using the RL Agent)
 python train_rl.py
+* For convenience, a pretrained model (rl_model.pt) is already included in the folder
 
 # Run matchups 
 python matchups.py
