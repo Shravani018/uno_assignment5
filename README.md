@@ -85,6 +85,7 @@ data/               Models, logs, datasets
 tests/              Unit tests
 app.py              Streamlit UI
 matchups.py         Tournament runner
+Slides.pptx         Presentation
 ```
 
 ---
