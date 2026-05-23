@@ -119,7 +119,14 @@ Slides.pptx         Presentation
 - [Winning UNO With Reinforcement Learning. *Stanford University AA228 Final Report* (2020).](https://web.stanford.edu/class/aa228/reports/2020/final79.pdf)
 - [Reinforcement learning compared to rule-based play in UNO. *DiVA Portal*.](https://www.diva-portal.org/smash/record.jsf?pid=diva2%3A1955734&dswid=-5242)
 - [Demaine, E. D., Demaine, M. L., Uehara, R., Uno, T., & Uno, Y. (2010). The Complexity of UNO.](https://www.researchgate.net/publication/45906238_The_complexity_of_UNO)
-- [Cowling, P. I., Powley, E. J., & Whitehouse, D. (2012). Information Set Monte Carlo Tree Search. *IEEE TCIAIG*, 4(2), 120–143.](https://www.researchgate.net/publication/254060888_Information_Set_Monte_Carlo_Tree_Search)
+- [Cowling, P. I., Powley, E. J., & Whitehouse, D. (2012). Information Set Monte Carlo Tree Search. *IEEE TCIAIG*, 4(2), 120–143.]
+(https://www.researchgate.net/publication/254060888_Information_Set_Monte_Carlo_Tree_Search)
 - [Kocsis, L., & Szepesvári, C. (2006). Bandit Based Monte-Carlo Planning. *ECML 2006*, LNCS 4212, pp. 282–293.](https://www.researchgate.net/publication/221112399_Bandit_Based_Monte-Carlo_Planning)
 - [Strategies](https://www.unorules.com/best-strategies-to-win-uno/)
+
+---
+
+- **Course:** Machine Learning 2  
+- **Professor:** Jan Nagler  
+- **Members:** Cui (Cathy) Yu, Shravani Mahadeshwar, Priya Botsa, Marc Hayes, Shaonan Feng, Di Yang
   
