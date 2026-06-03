@@ -1,0 +1,14 @@
+name: Keep Streamlit Awake
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */10 * * *"
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hit Streamlit app
+        run: curl -fsS -o /dev/null https://uno-matchup.streamlit.app/ 
