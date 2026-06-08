@@ -10,5 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Hit Streamlit app
-        run: curl -fsS -o /dev/null https://uno-matchup.streamlit.app/ 
+      - uses: actions/setup-node@v4
+
+      - run: npm install playwright
+
+      - name: Visit app for 1 minute
+        run: |
+          node <<'EOF'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage();
+
+            await page.goto('https://uno-matchup.streamlit.app/', {
+              waitUntil: 'networkidle',
+              timeout: 60000
+            });
+
+            console.log('App loaded');
+            await page.waitForTimeout(60000); // stay for 1 minute
+
+            await browser.close();
+            console.log('Browser closed');
+          })();
+          EOF
